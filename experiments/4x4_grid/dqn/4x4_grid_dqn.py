@@ -1,0 +1,102 @@
+import os
+import sys
+
+from sumo_ev_rl.environment.env import SumoEVEnvironment
+from sumo_ev_rl.environment.env import env
+from sumo_ev_rl.environment.charging_station import CLOSEST_STATIONS_NUM
+
+
+if "SUMO_HOME" in os.environ:
+    tools = os.path.join(os.environ["SUMO_HOME"], "tools")
+    sys.path.append(tools)
+else:
+    sys.exit("Please declare the environment variable 'SUMO_HOME'")
+import numpy as np
+import pandas as pd
+import ray
+import traci
+# from gym import spaces
+from gymnasium import spaces
+# from ray.rllib.agents.a3c.a3c import A3CTrainer
+# from ray.rllib.algorithms.ppo import PPOTF1Policy
+from ray.rllib.algorithms.dqn import DQNTFPolicy
+
+
+from ray import air
+from ray import tune
+
+# from ray.rllib.agents.a3c.a3c_tf_policy import A3CTFPolicy
+from ray.rllib.algorithms.dqn import DQNConfig
+
+from ray.rllib.env import PettingZooEnv
+from ray.tune.registry import register_env
+
+# import sumo_rl
+
+if __name__ == "__main__":
+    # ray.init(ignore_reinit_error=True, num_cpus=4)  # num_gpus=1
+    ray.init()
+    RESOLUTION = (3200, 1800)
+    net_dir_path = "../../../"
+    register_env(
+        "4x4_grid",
+        lambda _: PettingZooEnv(
+            env(
+                net_file=net_dir_path + "nets/ev_stations-Rory/4x4_grid/4x4_grid.net.xml",
+                sim_file=net_dir_path + "nets/ev_stations-Rory/4x4_grid/4x4_grid.sumocfg",
+                out_csv_name="../../outputs/4x4_grid/dqn/dqn",
+                use_gui=True,
+                num_seconds=1000,  # ?episode length..
+                render_mode="human",
+                virtual_display=RESOLUTION
+            )
+        ),
+    )
+
+    config = DQNConfig()
+
+    config.exploration_config = {
+        "type": "EpsilonGreedy",
+        "initial_epsilon": 1.0,
+        "final_epsilon": 0.01,  # ? try lower?
+        "epsilon_timesteps": 1000,
+    }
+
+    config.environment("4x4_grid")
+    config.multi_agent(
+        policies={"0": (DQNTFPolicy, spaces.Box(low=np.zeros(
+            2 + CLOSEST_STATIONS_NUM), high=np.ones(2 + CLOSEST_STATIONS_NUM)), spaces.Discrete(2), {})},
+        policy_mapping_fn=lambda agent_id, episode, worker, **kwargs: "0",
+    )
+
+    # ????
+    config.rollouts(num_rollout_workers=1, rollout_fragment_length=50)
+
+    config.training(lr=0.001)
+    # config.no_done_at_end = True #? deprecated..
+
+    tuner = tune.Tuner(
+        "DQN",
+        run_config=air.RunConfig(
+            stop={"timesteps_total": 500000},  # ??? this is the total
+            verbose=1,
+            checkpoint_config=air.CheckpointConfig(
+                checkpoint_frequency=5,
+                checkpoint_at_end=True,
+                checkpoint_score_attribute="episode_reward_mean"
+            ),
+            name="dqn",
+            local_dir="../../results",
+        ),
+        param_space=config.to_dict(),
+    )
+    results = tuner.fit()
+
+    # Get the best result based on a particular metric.
+    best_result = results.get_best_result(
+        metric="episode_reward_mean", mode="max")
+    print('best_result:', best_result)
+
+    # Get the best checkpoint corresponding to the best result.
+    best_checkpoint = best_result.checkpoint
+    print('\n\n--------best_checkpoint:\m', best_checkpoint, '----------')

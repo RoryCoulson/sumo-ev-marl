@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-03-24 14:29:02 by Eclipse SUMO sumo Version 1.16.0
+-->
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="4x4_grid.net.xml"/>
+        <route-files value="4x4_grid.rou.xml"/>
+        <!-- <additional-files value="circles.add.xml"/> -->
+        <!-- , charging_stations.add.xml <- need to add in the network file for some reason additional files not picking the charging station up -->
+    </input>
+    <output>
+        <battery-output value="battery.xml"/>
+        <chargingstations-output value="chargingstations.xml"/>
+        <summary-output value="results.out.xml"/>
+    </output>
+    <report>
+        <verbose value="true"/>
+        <duration-log.statistics value="true"/>
+    </report>
+    <processing>
+        <!-- <collision.action value="teleport"/> -->
+        <time-to-teleport value="1"/>
+        <!-- <lanechange.duration value="10"/> -->
+        <!-- <collision.stoptime value="10"/> -->
+        <lanechange.overtake-right value="False"/>
+        <collision.check-junctions value="True"/>
+    </processing>
+
+
+</configuration>
