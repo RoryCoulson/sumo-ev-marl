@@ -161,6 +161,10 @@ class SumoEVEnvironment(gym.Env):
             )
             for cs in self.cs_ids
         }
+        # initialise the stations' close stations
+        for cs in self.charging_stations.values():
+            cs.get_close_stations()
+
         print('charging_stations:', self.charging_stations)
 
         self.charging_stations_busy_vals = {cs: 0 for cs in self.cs_ids}
@@ -249,6 +253,10 @@ class SumoEVEnvironment(gym.Env):
             )
             for cs in self.cs_ids
         }
+        # initialise the stations' close stations
+        for cs in self.charging_stations.values():
+            cs.get_close_stations()
+
         self.vehicles = dict()
 
         if self.single_agent:

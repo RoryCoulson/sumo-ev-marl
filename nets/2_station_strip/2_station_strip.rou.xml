@@ -26,7 +26,7 @@
 
     <route id="route_straight" edges="1_to_2 2_to_4 4_to_5 5_to_7 7_to_8"/>
 
-    <flow id="1" route="route_straight" begin="0" end="10000000" probability="0.1" departSpeed="max" departPos="base" departLane="best" type="soulEV65"  color=".5,.5,0"/>
-    <flow id="non_ev" route="route_straight" begin="0" end="10000000" probability="0.05" departSpeed="max" departPos="base" departLane="best"  color="0,0,1"/>
+    <flow id="1" route="route_straight" begin="0" end="10000000" probability="0.05" departSpeed="max" departPos="base" departLane="best" type="soulEV65"  color=".5,.5,0"/>
+    <flow id="non_ev" route="route_straight" begin="0" end="10000000" probability="0.01" departSpeed="max" departPos="base" departLane="best"  color="0,0,1"/>
 
 </routes>
