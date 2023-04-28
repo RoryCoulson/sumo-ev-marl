@@ -110,6 +110,7 @@ class ChargingStation:
             f"Distances to station of close evs, (station: {self.id}): {dists_to_station}")
 
         closest_vehicle_battery = self.get_closest_battery(dists_to_station)
+
         # If no close vehicle detected return observation of zeros
         if closest_vehicle_battery == None:
             return np.zeros(2 + CLOSEST_STATIONS_NUM, dtype=np.float32)
@@ -133,34 +134,34 @@ class ChargingStation:
     def battery_wait_time_reward(self):
         return self.not_charged_reward + self.charge_reward
 
+    # Returns the battery of the closest vehicle to the station in driving distance
     def get_closest_battery(self, dists_to_station) -> np.ndarray:
-
-        # Only consider to reroute vehicles not already rerouted to a station and not already been decided by the agent whether to charge or not
-        print('dists_to_station:', dists_to_station)
+        # Only considers vehicles not already rerouted to a station and not already been decided by the agent
+        logging.debug(f"Distances to station: {dists_to_station}")
         consider_vehicles_dists_batteries = [[v,  dists_to_station[v], self.get_battery(
             v)] for v, d in dists_to_station.items() if d > 0 and d <= MAX_CLOSEST_DISTANCE]
 
         # Sort by closest vehicles
         consider_vehicles_dists_batteries.sort(key=lambda x: x[1])
-
-        print('consider_vehicles_dists_batteries:',
-              consider_vehicles_dists_batteries)
+        logging.debug(
+            f"consider_vehicles_dists_batteries: {consider_vehicles_dists_batteries}")
 
         if len(consider_vehicles_dists_batteries) == 0:
-            print(f"No vehicles to consider, (station: {self.id})")
+            logging.debug(f"No vehicles to consider (station: {self.id})")
             self.consider_vehicle = None
             return None
 
-        # get first (closest)
+        # Consider vehicle is the closest vehicle that the station will make an action on
         consider_vehicle_dist_battery = consider_vehicles_dists_batteries[0]
-        # Use for getting the corresponding ids of the observation vehicles
         self.consider_vehicle = consider_vehicle_dist_battery[0]
-        print('consider_vehicle:', self.consider_vehicle)
-        # don't get removed so looping edge case not covered
-        self.decided_vehicles.add(self.consider_vehicle)
-        print('decided_vehicles_now: ', self.decided_vehicles)
+        logging.debug(
+            f"Consider vehicle (station: {self.id}): {self.consider_vehicle}")
 
-        battery = self.get_battery(self.consider_vehicle)
+        self.decided_vehicles.add(self.consider_vehicle)
+        logging.debug(
+            f"Decided vehicles updated (station: {self.id}): {self.decided_vehicles}")
+
+        battery = consider_vehicle_dist_battery[2]
         return battery
 
     def remove_rerouted_vehicles(self):
@@ -348,13 +349,13 @@ class ChargingStation:
 
         return float(dist_to_station)
 
-    def get_battery(self, vehicle):
+    def get_battery_capacity(self, vehicle):
         battery = float(self.sumo.vehicle.getParameter(
             vehicle, 'device.battery.actualBatteryCapacity'))
         return battery
 
     def get_battery(self, vehicle):
-        battery = self.get_battery(vehicle)
+        battery = self.get_battery_capacity(vehicle)
         max_battery = float(self.sumo.vehicle.getParameter(
             vehicle, 'device.battery.maximumBatteryCapacity'))
         return (battery/max_battery)
