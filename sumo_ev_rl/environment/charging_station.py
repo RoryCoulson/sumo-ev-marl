@@ -152,8 +152,11 @@ class ChargingStation:
     # Reward combining of battery and wait time weightings
     def battery_wait_time_reward(self):
         logging.debug(
-            f"Not charged reward :{self.not_charged_reward}, Charged reward:{self.charge_reward}")
-        return self.not_charged_reward + self.charge_reward
+            f"Not charged reward: {self.not_charged_reward}, Charged reward: {self.charge_reward}")
+        reward = self.not_charged_reward + self.charge_reward
+        logging.debug(
+            f"Combined reward (cs: {self.id}): {reward}")
+        return reward
 
     # Returns the battery of the closest vehicle to the station in driving distance
     def get_closest_battery(self, dists_to_station) -> np.ndarray:
@@ -310,10 +313,6 @@ class ChargingStation:
         # If vehicle doesn't need chargining then don't combine how busy stations are into the reward
         if battery > 0.2 or collaborative_reward == 0:
             return battery_reward
-
-        logging.debug(f'Battery reward: (vehicle: {battery_reward}')
-        logging.debug(
-            f'Collaborative reward: (vehicle: {collaborative_reward}')
 
         # If collaborative reward exists then increase the significance
         if collaborative_reward > 0:

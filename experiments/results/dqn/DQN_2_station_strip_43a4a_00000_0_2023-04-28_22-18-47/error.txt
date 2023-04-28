@@ -1,0 +1,62 @@
+Failure # 1 (occurred at 2023-04-28_22-29-38)
+[36mray::DQN.train()[39m (pid=8145, ip=127.0.0.1, repr=DQN)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/tune/trainable/trainable.py", line 368, in train
+    raise skipped from exception_cause(skipped)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/tune/trainable/trainable.py", line 365, in train
+    result = self.step()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 782, in step
+    results, train_iter_ctx = self._run_one_training_iteration()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 2713, in _run_one_training_iteration
+    results = self.training_step()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/algorithms/dqn/dqn.py", line 405, in training_step
+    new_sample_batch = synchronous_parallel_sample(
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/execution/rollout_ops.py", line 85, in synchronous_parallel_sample
+    sample_batches = worker_set.foreach_worker(
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/worker_set.py", line 701, in foreach_worker
+    handle_remote_call_result_errors(remote_results, self._ignore_worker_failures)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/worker_set.py", line 74, in handle_remote_call_result_errors
+    raise r.get()
+ray.exceptions.RayTaskError(FatalTraCIError): [36mray::RolloutWorker.apply()[39m (pid=8155, ip=127.0.0.1, repr=<ray.rllib.evaluation.rollout_worker.RolloutWorker object at 0x7f91837dff70>)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/utils/actor_manager.py", line 183, in apply
+    raise e
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/utils/actor_manager.py", line 174, in apply
+    return func(self, *args, **kwargs)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/execution/rollout_ops.py", line 86, in <lambda>
+    lambda w: w.sample(), local_worker=False, healthy_only=True
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 914, in sample
+    batches = [self.input_reader.next()]
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 92, in next
+    batches = [self.get_data()]
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/sampler.py", line 277, in get_data
+    item = next(self._env_runner)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 323, in run
+    outputs = self.step()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/env_runner_v2.py", line 379, in step
+    self._base_env.send_actions(actions_to_send)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/env/multi_agent_env.py", line 656, in send_actions
+    raise e
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/env/multi_agent_env.py", line 645, in send_actions
+    obs, rewards, terminateds, truncateds, infos = env.step(agent_dict)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/env/wrappers/pettingzoo_env.py", line 125, in step
+    self.env.step(action[self.env.agent_selection])
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/pettingzoo/utils/wrappers/order_enforcing.py", line 75, in step
+    super().step(action)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/pettingzoo/utils/wrappers/base.py", line 108, in step
+    self.env.step(action)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/pettingzoo/utils/wrappers/assert_out_of_bounds.py", line 26, in step
+    super().step(action)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/pettingzoo/utils/wrappers/base.py", line 108, in step
+    self.env.step(action)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/sumo_ev_rl/environment/env.py", line 710, in step
+    self.env._run_steps()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/sumo_ev_rl/environment/env.py", line 377, in _run_steps
+    self._sumo_step()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/sumo_ev_rl/environment/env.py", line 487, in _sumo_step
+    self.sumo.simulationStep()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/traci/connection.py", line 374, in simulationStep
+    result = self._sendCmd(tc.CMD_SIMSTEP, None, None, "D", step)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/traci/connection.py", line 230, in _sendCmd
+    return self._sendExact()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/traci/connection.py", line 136, in _sendExact
+    raise FatalTraCIError("connection closed by SUMO")
+traci.exceptions.FatalTraCIError: connection closed by SUMO
