@@ -27,6 +27,7 @@ else:
 
 LIBSUMO = "LIBSUMO_AS_TRACI" in os.environ
 
+
 def env(**kwargs):
     """Instantiate a PettingoZoo environment."""
     env = SumoEVEnvironmentPZ(**kwargs)
@@ -91,7 +92,6 @@ class SumoEVEnvironment(gym.Env):
         time_to_teleport: int = -1,
         delta_time: int = 5,
         single_agent: bool = False,
-        reward_fn: Union[str, Callable, dict] = "battery",
         add_system_info: bool = True,
         add_per_agent_info: bool = True,
         sumo_seed: Union[str, int] = "random",
@@ -124,7 +124,6 @@ class SumoEVEnvironment(gym.Env):
         self.waiting_time_memory = waiting_time_memory
         self.time_to_teleport = time_to_teleport
         self.single_agent = single_agent
-        self.reward_fn = reward_fn
         self.sumo_seed = sumo_seed
         # self.fixed_ts = fixed_ts
         self.sumo_warnings = sumo_warnings
@@ -154,26 +153,14 @@ class SumoEVEnvironment(gym.Env):
             edge = conn.lane.getEdgeID(lane)
             self.cs_edges[cs_id] = edge
 
-        if isinstance(self.reward_fn, dict):
-            self.charging_stations = {
-                cs: ChargingStation(
-                    self,
-                    cs,
-                    self.reward_fn[cs],
-                    conn,
-                )
-                for cs in self.reward_fn.keys()
-            }
-        else:
-            self.charging_stations = {
-                cs: ChargingStation(
-                    self,
-                    cs,
-                    self.reward_fn,
-                    conn,
-                )
-                for cs in self.cs_ids
-            }
+        self.charging_stations = {
+            cs: ChargingStation(
+                self,
+                cs,
+                conn,
+            )
+            for cs in self.cs_ids
+        }
         print('charging_stations:', self.charging_stations)
 
         self.charging_stations_busy_vals = {cs: 0 for cs in self.cs_ids}
@@ -254,26 +241,14 @@ class SumoEVEnvironment(gym.Env):
 
         self._start_simulation()
 
-        if isinstance(self.reward_fn, dict):
-            self.charging_stations = {
-                cs: ChargingStation(
-                    self,
-                    cs,
-                    self.reward_fn[cs],
-                    self.sumo,
-                )
-                for cs in self.reward_fn.keys()
-            }
-        else:
-            self.charging_stations = {
-                cs: ChargingStation(
-                    self,
-                    cs,
-                    self.reward_fn,
-                    self.sumo,
-                )
-                for cs in self.cs_ids
-            }
+        self.charging_stations = {
+            cs: ChargingStation(
+                self,
+                cs,
+                self.sumo,
+            )
+            for cs in self.cs_ids
+        }
         self.vehicles = dict()
 
         if self.single_agent:

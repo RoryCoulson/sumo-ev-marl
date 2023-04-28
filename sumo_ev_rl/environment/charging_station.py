@@ -29,7 +29,6 @@ class ChargingStation:
         self,
         env,
         cs_id: str,
-        reward_fn: Union[str, Callable],
         sumo,
     ):
         """Initializes a TrafficSignal object.
@@ -44,7 +43,6 @@ class ChargingStation:
         self.id = cs_id
         self.env = env
         self.last_reward = None
-        self.reward_fn = reward_fn
         self.sumo = sumo
 
         # penalties/reward counts
@@ -61,14 +59,7 @@ class ChargingStation:
 
         self.closest_stations = None
 
-        # if type(self.reward_fn) is str:
-        #     if self.reward_fn in ChargingStation.reward_fns.keys():
-        #         self.reward_fn = ChargingStation.reward_fns[self.reward_fn]
-        #     else:
-        #         raise NotImplementedError(
-        #             f"Reward function {self.reward_fn} not implemented")
 
-        # self.observation_fn = self.env.observation_class(self)
 
         # Lane to the charging station (if it applies to a single lane), in which if got busy would affect the access to the station
         # (Assumption: each station has a single lane to it and a single lane out of it...)
@@ -443,19 +434,3 @@ class ChargingStation:
         veh_list = self.sumo.lane.getLastStepVehicleIDs(self.lane_id)
         return veh_list
 
-    # @classmethod
-    # def register_reward_fn(cls, fn: Callable):
-    #     """Registers a reward function.
-
-    #     Args:
-    #         fn (Callable): The reward function to register.
-    #     """
-    #     if fn.__name__ in cls.reward_fns.keys():
-    #         raise KeyError(f"Reward function {fn.__name__} already exists")
-
-    #     cls.reward_fns[fn.__name__] = fn
-
-    # # select in env: reward_fn
-    # reward_fns = {
-    #     "battery": _battery_wait_time_reward,
-    # }
