@@ -6,6 +6,7 @@ import sumolib
 import traci
 import numpy as np
 from gymnasium import spaces
+import logging
 
 if "SUMO_HOME" in os.environ:
     tools = os.path.join(os.environ["SUMO_HOME"], "tools")
@@ -18,125 +19,85 @@ MAX_CLOSEST_DISTANCE = 500
 MAX_RANGE = 150000
 CHARGING_DURATION = 80
 
-# set 1hr as the max wait time to help (min-max scaling) normalize the wait_time observation value
+# Wait time given as a fraction of the estimated max wait time, currently set to 1hr
 ESTIMATED_MAX_WAIT_TIME = 1*60*60
 CLOSEST_STATIONS_NUM = 2
 
 
 class ChargingStation:
-
-    def __init__(
-        self,
-        env,
-        cs_id: str,
-        sumo,
-    ):
-        """Initializes a TrafficSignal object.
-
-        Args:
-            env (SumoEVEnvironment): The environment this traffic signal belongs to.
-            cs_id (str): The id of the charging station.
-            delta_time (int): The time in seconds between actions.            
-            reward_fn (Union[str, Callable]): The reward function. Can be a string with the name of the reward function or a callable function.
-            sumo (Sumo): The Sumo instance.
-        """
+    logging.basicConfig(level=logging.DEBUG)
+    def __init__(self, env, cs_id, sumo):
         self.id = cs_id
         self.env = env
-        self.last_reward = None
         self.sumo = sumo
 
         # penalties/reward counts
-        self.last_measure = 0.0
-
         self.charge_reward = 0
         self.not_charged_reward = 0
 
+        # Get station properties
         self.consider_vehicle = None
         self.decided_vehicles = set()
         self.rerouted_vehicles = set()
         self.waiting_count = 0
         self.busy_val = 0
-
         self.closest_stations = None
-
-
-
-        # Lane to the charging station (if it applies to a single lane), in which if got busy would affect the access to the station
-        # (Assumption: each station has a single lane to it and a single lane out of it...)
         self.lane_id = self.sumo.chargingstation.getLaneID(self.id)
+        self.lane_length = self.sumo.lane.getLength(self.lane_id)
         self.edge_id = self.sumo.lane.getEdgeID(self.lane_id)
         self.cs_end_pos = self.sumo.chargingstation.getEndPos(self.id)
+        net = sumolib.net.readNet(self.env._net)
+        self.incoming_lanes = net.getLane(self.lane_id).getIncoming()
+        self.incoming_lanes_ids = set(
+            [lane.getID() for lane in self.incoming_lanes])
 
-        self.lane_length = self.sumo.lane.getLength(self.lane_id)
+        # Subscription for detecting nearby vehicles
+        traci.chargingstation.subscribeContext(
+            self.id, traci.constants.CMD_GET_VEHICLE_VARIABLE, MAX_CLOSEST_DISTANCE)
 
+        # Observations: [close_vehicle_battery, busy_val, closest_busy_val, 2nd_closest_busy_val] all range from 0 to 1
         self.observation_space = spaces.Box(
             low=np.zeros(2 + CLOSEST_STATIONS_NUM, dtype=np.float32),
             high=np.ones(2 + CLOSEST_STATIONS_NUM, dtype=np.float32),
         )
 
-        # retrieve the incoming edges of the destination of an edge
-        net = sumolib.net.readNet(self.env._net)
-        self.incoming_lanes = net.getLane(self.lane_id).getIncoming()
-        self.incoming_lanes_ids = set([lane.getID()
-                                       for lane in self.incoming_lanes])
-
-        # set up subscription to nearby vehicles
-        traci.chargingstation.subscribeContext(
-            self.id, traci.constants.CMD_GET_VEHICLE_VARIABLE, MAX_CLOSEST_DISTANCE)
-
-        # traci.vehicle.addSubscriptionFilterUpstreamDistance(MAX_CLOSEST_DISTANCE)
-
-        # Either 0 (don't charge observed vehicle) or 1 (reroute and charge it)
+        # Boolean action: either charge detected vehicle (1) or don't (0)
         self.action_space = spaces.Discrete(2)
 
-    def update(self):
-        """Updates the charging station state.
-        If the charging should act, ...
-        """
-
-        # ? no updates to the charging state needed?
-        pass
-
     def reset_rewards(self):
-        """Updates the charging station state.
-        If the charging should act, ...
-        """
-        # Reset reward/penalty counts
         self.charge_reward = 0
         self.not_charged_reward = 0
 
+    # Update vehicle's route to charge at the station
     def reroute_vehicle(self, vehicle_id: int):
-        battery = self.get_battery_decimal(vehicle_id)
-
+        battery = self.get_battery(vehicle_id)
+        # Receive the charging reward
         self.charge_reward += self.get_combined_charge_reward(
             battery)
+        logging.debug(f"Charge reward: {self.charge_reward}")
 
-        print(f'-----------CHARGE REWARD: {self.charge_reward}')
-
-        # Reroute to charging station
+        # Check if already rerouted
         last_curr_edge_id = self.sumo.vehicle.getRoadID(vehicle_id)
         vehicle_route = self.sumo.vehicle.getRoute(vehicle_id)
         charging_station_edges = self.env.cs_edges.values()
 
-        # If another agent has rerouted the vehicle in the same step
+        # Don't reroute if another agent has rerouted
         if set(vehicle_route).intersection(set(charging_station_edges)):
-            print(f"DON'T REROUTE AS ANOTHER STATION ALREADY HAS THIS STEP")
+            logging.debug(f"Vehicle already rerouted in this step")
             return
 
+        # Reroute to charging station
         destination_edge_id = vehicle_route[-1]
         route_to_station = self.sumo.simulation.findRoute(
             last_curr_edge_id, self.edge_id).edges
-
         route_to_destination = self.sumo.simulation.findRoute(
             self.edge_id, destination_edge_id).edges
-
         self.rerouted_vehicles.add(vehicle_id)
-
         new_route = route_to_station[:-1] + route_to_destination
-        print(f'New_route: (vehicle: {vehicle_id})', new_route)
-        # ? remove repeated loops in new_route... (route_to_destination?)
-        self.sumo.vehicle.setRoute(vehicle_id, new_route)
+        
+        logging.debug(f'New route: (vehicle: {vehicle_id}): {new_route}')
 
+        self.sumo.vehicle.setRoute(vehicle_id, new_route)
         self.sumo.vehicle.setStop(
             vehicle_id, self.edge_id, pos=self.cs_end_pos,  duration=CHARGING_DURATION)
 
@@ -227,7 +188,7 @@ class ChargingStation:
         self.decided_vehicles.add(self.consider_vehicle)
         print('decided_vehicles_now: ', self.decided_vehicles)
 
-        battery = self.get_battery_decimal(self.consider_vehicle)
+        battery = self.get_battery(self.consider_vehicle)
         return battery
 
     def remove_rerouted_vehicles(self):
@@ -420,7 +381,7 @@ class ChargingStation:
             vehicle, 'device.battery.actualBatteryCapacity'))
         return battery
 
-    def get_battery_decimal(self, vehicle):
+    def get_battery(self, vehicle):
         battery = self.get_battery(vehicle)
         max_battery = float(self.sumo.vehicle.getParameter(
             vehicle, 'device.battery.maximumBatteryCapacity'))
@@ -433,4 +394,3 @@ class ChargingStation:
     def _get_veh_list(self):
         veh_list = self.sumo.lane.getLastStepVehicleIDs(self.lane_id)
         return veh_list
-

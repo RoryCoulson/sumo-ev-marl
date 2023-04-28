@@ -88,7 +88,7 @@ if __name__ == "__main__":
                 if not cs.consider_vehicle:
                     actions[id] = 0
                 else:
-                    closest_battery = cs.get_battery_decimal(
+                    closest_battery = cs.get_battery(
                         cs.consider_vehicle)
                     actions[id] = int(closest_battery <= 0.2)
 
