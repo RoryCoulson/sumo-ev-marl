@@ -1,7 +1,5 @@
-"""This module contains the ChargingStation class, which represents a charging station in the simulation."""
 import os
 import sys
-from typing import Callable, Union
 import sumolib
 import traci
 import numpy as np
@@ -164,32 +162,28 @@ class ChargingStation:
         battery = consider_vehicle_dist_battery[2]
         return battery
 
+    # Remove the rerouted vehicles from the set once it's about to charge
     def remove_rerouted_vehicles(self):
-        # get all vehicles currently on lane and if in rerouted_vehicles then remove it
-        # remove rerouted vehicles which are now on the lane of the charger
         vehicles_on_lane = self.sumo.lane.getLastStepVehicleIDs(self.lane_id)
         self.rerouted_vehicles = set([
             v for v in self.rerouted_vehicles if v not in vehicles_on_lane])
 
     def get_lane_wait_time(self):
-        # Simplifying assumption: Each station is at end of a lane and that current wait_time will impact future??
         lanes = self.incoming_lanes_ids.copy()
         lanes.add(self.lane_id)
         wait_time = sum([self.sumo.lane.getWaitingTime(lane)
                         for lane in lanes])
 
-        # (in seconds)
-        # normalize the value to between 0-estimated_max
+        # Normalize the value to between 0-estimated_max
         wait_time = wait_time / ESTIMATED_MAX_WAIT_TIME
-
         return wait_time
 
+    # Calculates lane density using current and incoming lanes to station
     def get_lane_density(self):
-        # 1 -> most dense (lane full of vehicles), 0 -> not dense (lane empty)
-        # ? add the number vehicles routed to the station - not perfect but seems useful?
         lanes = self.incoming_lanes_ids.copy()
         lanes.add(self.lane_id)
         lane_density_sum = 0
+        # Combines the rerouted vehicles arriving to improve density estimations
         rerouted_av = (len(self.rerouted_vehicles)/len(lanes))
         MIN_GAP = 2.5
         for lane in lanes:
@@ -198,55 +192,49 @@ class ChargingStation:
                 lane_length / (MIN_GAP + self.sumo.lane.getLastStepLength(lane)))
             lane_density_sum += lane_density
 
-        # the average density of the station lane and any lanes directly to that lane
+        # Average density of the station lane and any lanes directly to that lane
         total_lane_density = lane_density_sum / len(lanes)
 
-        if total_lane_density > 1:  # clipping
-            total_lane_density = 1
-
-        # TODO test
+        # Clipping to maximum if other the threshold
+        total_lane_density = 1 if total_lane_density > 1 else total_lane_density
         return total_lane_density
 
-    # TODO test
+    # Get the busy values of close stations
     def get_close_busy_vals(self):
-        print('self.closest_stations:', self.closest_stations)
-        if not self.closest_stations:  # ! only should occur at start... check! or none after
-            busy_vals = list(np.ones(CLOSEST_STATIONS_NUM))
-            print('error if repeating!')
+        logging.debug(f"Closest stations: {self.closest_stations}")
+        if self.closest_stations:
+            busy_vals = [cs.busy_val for cs in self.closest_stations.values()]
         else:
-            busy_vals = [cs.busy_val if cs.busy_val <
-                         1 else 1 for cs in self.closest_stations.values()]  # plus clipping!
-        # ? if not enough close stations then add dummy very busy stations?
+            busy_vals = list(np.ones(CLOSEST_STATIONS_NUM))
+        # Fill remaining values if not filled by stations
         while len(busy_vals) < CLOSEST_STATIONS_NUM:
             busy_vals.append(1)
 
         return busy_vals
 
+    # Gets the max of the wait time and density of station
     def get_busy_val(self):
         wait_time = self.get_lane_wait_time()
         density = self.get_lane_density()
-
-        # TODO adjust this weighting?
         self.busy_val = max(wait_time, density)
-        print('busy_val:', self.busy_val)
-        if self.busy_val > 1:  # clipping
-            self.busy_val = 1
+
+        logging.debug(f"Busy value: {self.busy_val}")
+        # Clip if over threshold
+        self.busy_val = 1 if self.busy_val > 1 else self.busy_val
         return self.busy_val
 
-    # reward for charging
+    # Returns reward for charging
     def get_combined_charge_reward(self, battery):
-        # todo: tune
+        # Weighted battery reward: range[-max_rew, max_rew]
         max_bat_rew = 2
-        # weighted, range[-max_rew, max_rew]
         battery_reward = - \
             max_bat_rew if battery > 0.4 else np.cos(battery*7.85)*max_bat_rew
 
+        # Get remaining range of considered vehicle
         energy_consumed = float(self.sumo.vehicle.getParameter(
             self.consider_vehicle, "device.battery.totalEnergyConsumed"))
         distance_travelled = self.sumo.vehicle.getDistance(
             self.consider_vehicle)
-
-        # get remaining range of vehicle
         if distance_travelled == 0 or energy_consumed == 0:
             remaining_range = MAX_RANGE
         else:
@@ -254,74 +242,63 @@ class ChargingStation:
             remaining_range = float(self.sumo.vehicle.getParameter(
                 self.consider_vehicle, "device.battery.actualBatteryCapacity")) * mWh
 
-        # TODO test
+        # Get busyness differences of closest stations to current that are within the remaining range
         close_busy_vals_diff = self.get_close_busy_vals_diff(remaining_range)
 
-        # todo tune
-        # ranges [-max_collab_rew,max_collab_rew] (should be bigger than the other combined reward...?)
-        max_collab_rew = 1  # ?should be more than battery...? to make sure if charge low but could've charge low somewhere else then give pen? <- check
-        # ? update? reward is min busyness diff, so if a close station is less busy and in range then penalize, if none less busy then reward - by the min-diff
+        # Weighted minimum busyness difference, if a close station is less busy min(diff) will be negative and vice versa
+        max_collab_rew = 1
         collaborative_reward = (min(close_busy_vals_diff)
                                 if close_busy_vals_diff else 0) * max_collab_rew
 
-        # If not needing a refill don't include how busy stations are into reward
-        # ? 0.2? push this up?
-        if battery > 0.2 or collaborative_reward == 0:  # or battery < 0.05:#?
-            # collab reward and busy reward not relevant if a) doesn't need charging,( b) needs charging urgently -> if it can make it to next it should..?)
+        # If vehicle doesn't need chargining then don't combine how busy stations are into the reward
+        if battery > 0.2 or collaborative_reward == 0:
             return battery_reward
 
-        print(
-            f"battery_reward: {battery_reward}, collab_reward: {collaborative_reward}")
+        logging.debug(f'Battery reward: (vehicle: {battery_reward}')
+        logging.debug(
+            f'Collaborative reward: (vehicle: {collaborative_reward}')
 
-        # ?????? trying to make sure it's not small, collab reward range: [1->2, -1->-2]
+        # If collaborative reward exists then increase the significance
         if collaborative_reward > 0:
             collaborative_reward += 1
         else:
             collaborative_reward -= 1
 
-        # ? collab_rew includes battery by range...
         return collaborative_reward
 
+    # Get busy values of close stations within remaining range of considered vehicle
     def get_close_busy_vals_diff(self, remaining_range):
         close_busy_vals_diff = []
-
         veh_to_station_distances = {}
         last_curr_edge_id = self.sumo.vehicle.getRoadID(self.consider_vehicle)
-        last_curr_lane_id = self.sumo.vehicle.getLaneID(self.consider_vehicle)
-        lane_length = self.sumo.lane.getLength(last_curr_lane_id)
 
-        for cs_id, cs in self.env.charging_stations.items():
-            # TODO check if in same units! km?
-            if cs_id != self.id:
-                cs2_edge = self.env.cs_edges[cs_id]
-                veh_to_station_distance = self.sumo.simulation.getDistanceRoad(
-                    last_curr_edge_id, 0, cs2_edge, 0, isDriving=True)
-
-                veh_to_station_distances[cs_id] = veh_to_station_distance
+        for cs_id, cs in self.closest_stations:
+            # for cs_id, cs in self.env.charging_stations.items(): #! updated since clean!
+            # if cs_id != self.id:
+            cs2_edge = self.env.cs_edges[cs_id]
+            veh_to_station_distance = self.sumo.simulation.getDistanceRoad(
+                last_curr_edge_id, 0, cs2_edge, 0, isDriving=True)
+            veh_to_station_distances[cs_id] = veh_to_station_distance
 
         sorted_station_distances = {id: dist for id, dist in sorted(
             veh_to_station_distances.items(), key=lambda item: item[1]) if dist > 0}
 
-        print('sorted_station_distances:', sorted_station_distances)
+        logging.debug(f'Sorted station distances: {sorted_station_distances}')
         closest_ids = list(sorted_station_distances.keys())[
             :CLOSEST_STATIONS_NUM]
-        print('closest_ids:', closest_ids)
+        logging.debug(f'Closest ids: {closest_ids}')
 
-        # # ? get charging_stations another way?
         self.closest_stations = {
             cs_id: self.env.charging_stations[cs_id] for cs_id in closest_ids}
-
-        print(
-            f'self.closest_stations to (cd_{self.id}):', self.closest_stations.keys())
+        logging.debug(
+            f'Closest stations to considered vehicle: {self.closest_stations.keys()}')
 
         for cs in self.closest_stations.values():
             if remaining_range > veh_to_station_distance:
-                print(f'veh can get to {cs}')
+                logging.debug(f'Vehicle is in range of: {cs}')
                 close_busy_vals_diff.append(cs.busy_val - self.busy_val)
 
-        #! get only the top 3 closest!)
-
-        print(f"TEST!!: close_busy_vals_diff: {close_busy_vals_diff}")
+        logging.debug(f'Close busy values difference: {close_busy_vals_diff}')
         return close_busy_vals_diff
 
     # Get distance from vehicle to charging station
