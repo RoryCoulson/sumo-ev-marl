@@ -8,7 +8,3 @@ sumo_ev_rl/__init__.py
 sumo_ev_rl/environment/__init__.py
 sumo_ev_rl/environment/charging_station.py
 sumo_ev_rl/environment/env.py
-sumo_ev_rl/util/__init__.py
-sumo_ev_rl/util/gen_route.py
-sumo_ev_rl/util/xml2csv.py
-sumo_ev_rl/util/xsd.py

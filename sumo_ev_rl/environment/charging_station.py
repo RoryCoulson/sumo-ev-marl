@@ -1,40 +1,29 @@
 """This module contains the ChargingStation class, which represents a charging station in the simulation."""
-import collections
-import decimal
 import os
 import sys
-from typing import Callable, List, Union
+from typing import Callable, Union
 import sumolib
 import traci
+import numpy as np
+from gymnasium import spaces
 
 if "SUMO_HOME" in os.environ:
     tools = os.path.join(os.environ["SUMO_HOME"], "tools")
     sys.path.append(tools)
 else:
-    raise ImportError("Please declare the environment variable 'SUMO_HOME'")
-import numpy as np
-from gymnasium import spaces
+    raise ImportError("'SUMO_HOME' environment variable")
 
 
-# UPDATE these params:
-# only consider vehicles this far or closer to the station in obs
-MAX_CLOSEST_DISTANCE = 500  # ? kms? m? m I think
-# !(km) ?is this in m or km though?! https://www.evspecifications.com/en/model-driving-range/e94fa0
+MAX_CLOSEST_DISTANCE = 500
 MAX_RANGE = 150000
-# ! update if changed in rou.xml file (assumption: all vehicles have same value for this)
-# (note depends on get_battery_class - probs update with cleaner way)
 CHARGING_DURATION = 80
 
 # set 1hr as the max wait time to help (min-max scaling) normalize the wait_time observation value
 ESTIMATED_MAX_WAIT_TIME = 1*60*60
-# the number of stations the current station will refer to when deciding about optimal actions and compare wait times
 CLOSEST_STATIONS_NUM = 2
 
 
 class ChargingStation:
-    # Default min gap of SUMO (see https://sumo.dlr.de/docs/Simulation/Safety.html). Should this be parameterized?
-    MIN_GAP = 2.5
-    NUM_VEHICLES_TO_CONSIDER = 5  # consider only the 5 closest vehicles in each obs?
 
     def __init__(
         self,
@@ -72,12 +61,12 @@ class ChargingStation:
 
         self.closest_stations = None
 
-        if type(self.reward_fn) is str:
-            if self.reward_fn in ChargingStation.reward_fns.keys():
-                self.reward_fn = ChargingStation.reward_fns[self.reward_fn]
-            else:
-                raise NotImplementedError(
-                    f"Reward function {self.reward_fn} not implemented")
+        # if type(self.reward_fn) is str:
+        #     if self.reward_fn in ChargingStation.reward_fns.keys():
+        #         self.reward_fn = ChargingStation.reward_fns[self.reward_fn]
+        #     else:
+        #         raise NotImplementedError(
+        #             f"Reward function {self.reward_fn} not implemented")
 
         # self.observation_fn = self.env.observation_class(self)
 
@@ -192,20 +181,10 @@ class ChargingStation:
 
     def compute_reward(self):
         """Computes the reward of the charging station."""
-        self.last_reward = self.reward_fn(self)
-        return self.last_reward
-
-    def _pressure_reward(self):
-        return self.get_pressure()
-
-    def _average_speed_reward(self):
-        return self.get_average_speed()
-
-    def _queue_reward(self):
-        return -self.get_total_queued()
+        return self.battery_wait_time_reward()
 
     # Combination of rewarding agents that charge low battery vehicles and only when best depending on their wait times
-    def _battery_wait_time_reward(self):
+    def battery_wait_time_reward(self):
         reward = self.not_charged_reward + self.charge_reward
 
         return reward
@@ -287,10 +266,11 @@ class ChargingStation:
         lanes.add(self.lane_id)
         lane_density_sum = 0
         rerouted_av = (len(self.rerouted_vehicles)/len(lanes))
+        MIN_GAP = 2.5
         for lane in lanes:
             lane_length = self.sumo.lane.getLength(lane)
             lane_density = (self.sumo.lane.getLastStepVehicleNumber(lane) + rerouted_av) / (
-                lane_length / (self.MIN_GAP + self.sumo.lane.getLastStepLength(lane)))
+                lane_length / (MIN_GAP + self.sumo.lane.getLastStepLength(lane)))
             lane_density_sum += lane_density
 
         # the average density of the station lane and any lanes directly to that lane
@@ -463,19 +443,19 @@ class ChargingStation:
         veh_list = self.sumo.lane.getLastStepVehicleIDs(self.lane_id)
         return veh_list
 
-    @classmethod
-    def register_reward_fn(cls, fn: Callable):
-        """Registers a reward function.
+    # @classmethod
+    # def register_reward_fn(cls, fn: Callable):
+    #     """Registers a reward function.
 
-        Args:
-            fn (Callable): The reward function to register.
-        """
-        if fn.__name__ in cls.reward_fns.keys():
-            raise KeyError(f"Reward function {fn.__name__} already exists")
+    #     Args:
+    #         fn (Callable): The reward function to register.
+    #     """
+    #     if fn.__name__ in cls.reward_fns.keys():
+    #         raise KeyError(f"Reward function {fn.__name__} already exists")
 
-        cls.reward_fns[fn.__name__] = fn
+    #     cls.reward_fns[fn.__name__] = fn
 
-    # select in env: reward_fn
-    reward_fns = {
-        "battery": _battery_wait_time_reward,
-    }
+    # # select in env: reward_fn
+    # reward_fns = {
+    #     "battery": _battery_wait_time_reward,
+    # }

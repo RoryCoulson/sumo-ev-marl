@@ -1,16 +1,10 @@
 """SUMO Environment for Traffic Signal Control."""
+
 import os
 import random
 import sys
 from pathlib import Path
 from typing import Callable, Optional, Tuple, Union
-
-
-if "SUMO_HOME" in os.environ:
-    tools = os.path.join(os.environ["SUMO_HOME"], "tools")
-    sys.path.append(tools)
-else:
-    raise ImportError("Please declare the environment variable 'SUMO_HOME'")
 import gymnasium as gym
 import numpy as np
 import pandas as pd
@@ -21,20 +15,24 @@ from gymnasium.utils.ezpickle import EzPickle
 from pettingzoo import AECEnv
 from pettingzoo.utils import agent_selector, wrappers
 from pettingzoo.utils.conversions import parallel_wrapper_fn
-
-# from .traffic_signal import TrafficSignal
 from .charging_station import ChargingStation
 from pyvirtualdisplay.smartdisplay import SmartDisplay
 
-LIBSUMO = "LIBSUMO_AS_TRACI" in os.environ
+if "SUMO_HOME" in os.environ:
+    tools = os.path.join(os.environ["SUMO_HOME"], "tools")
+    sys.path.append(tools)
+else:
+    raise ImportError("Please declare the environment variable 'SUMO_HOME'")
 
+
+LIBSUMO = "LIBSUMO_AS_TRACI" in os.environ
 
 def env(**kwargs):
     """Instantiate a PettingoZoo environment."""
     env = SumoEVEnvironmentPZ(**kwargs)
     env = wrappers.AssertOutOfBoundsWrapper(env)
     env = wrappers.OrderEnforcingWrapper(env)
-    
+
     return env
 
 
@@ -45,10 +43,6 @@ class SumoEVEnvironment(gym.Env):
     """SUMO Environment for EV Charging Stations.
 
     TODO: reword this for ev when done:
-
-    Class that implements a gym.Env interface for traffic signal control using the SUMO simulator.
-    See https://sumo.dlr.de/docs/ for details on SUMO.
-    See https://gymnasium.farama.org/ for details on gymnasium.
 
     Args:
         net_file (str): SUMO .net.xml file
@@ -90,12 +84,12 @@ class SumoEVEnvironment(gym.Env):
         out_csv_name: Optional[str] = None,
         use_gui: bool = False,
         virtual_display: Tuple[int, int] = (3200, 1800),
-        begin_time: int = 0,  # ? needed?
-        num_seconds: int = 20000,  # ? change to change total sim time?
+        begin_time: int = 0,
+        num_seconds: int = 10000,
         max_depart_delay: int = -1,
         waiting_time_memory: int = 1000,
         time_to_teleport: int = -1,
-        delta_time: int = 5,  # ? adjust to change time per step in the simulation
+        delta_time: int = 5,
         single_agent: bool = False,
         reward_fn: Union[str, Callable, dict] = "battery",
         add_system_info: bool = True,
