@@ -44,7 +44,7 @@ if __name__ == "__main__":
             env(
                 net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
                 sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
-                out_csv_name="../../outputs/4_station_strip/ppo/ppo",
+                output_file="../../outputs/4_station_strip/ppo/ppo",
                 use_gui=True,
                 num_seconds=5000,  # ?episode length..
                 render_mode="human",

@@ -44,7 +44,7 @@ if __name__ == "__main__":
             env(
                 net_file=net_dir_path + "nets/berlin/berlin.net.xml",
                 sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
-                out_csv_name="../../outputs/berlin/dqn/dqn",
+                output_file="../../outputs/berlin/dqn/dqn",
                 use_gui=True,
                 num_seconds=1000,  # ?episode length..
                 render_mode="human",

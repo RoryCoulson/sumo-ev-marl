@@ -69,7 +69,7 @@ if __name__ == "__main__":
         net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
         # route_file=args.route,
         sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
-        out_csv_name=out_csv,
+        output_file=out_csv,
         use_gui=True,
         num_seconds=args.seconds,
         render_mode="human",

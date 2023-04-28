@@ -1,11 +1,12 @@
 from pettingzoo.test import api_test, parallel_api_test
 import sumo_ev_rl
 
+
 def test_api():
     env = sumo_ev_rl.env(
         net_file="../nets/2_station_strip/2_station_strip.net.xml",
         sim_file="../nets/2_station_strip/2_station_strip.sumocfg",
-        out_csv_name="outputs/2_station_strip/test",
+        output_file="outputs/2_station_strip/test",
         use_gui=False,
         num_seconds=100,
     )
@@ -17,7 +18,7 @@ def test_parallel_api():
     env = sumo_ev_rl.parallel_env(
         net_file="../nets/2_station_strip/2_station_strip.net.xml",
         sim_file="../nets/2_station_strip/2_station_strip.sumocfg",
-        out_csv_name="outputs/2_station_strip/test",
+        output_file="outputs/2_station_strip/test",
         use_gui=False,
         num_seconds=100,
     )

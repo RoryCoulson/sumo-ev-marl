@@ -35,7 +35,7 @@ if __name__ == "__main__":
             env(
                 net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
                 sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
-                out_csv_name="../../outputs/4_station_strip/dqn/best/best_run",
+                output_file="../../outputs/4_station_strip/dqn/best/best_run",
                 use_gui=True,
                 num_seconds=5000,  # ?episode length..
                 render_mode="human",
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     env = SumoEVEnvironment(
         net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
         sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
-        out_csv_name=out_csv,
+        output_file=out_csv,
         use_gui=args.gui,
         num_seconds=args.seconds,
         render_mode="human",

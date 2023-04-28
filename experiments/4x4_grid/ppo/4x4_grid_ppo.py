@@ -44,7 +44,7 @@ if __name__ == "__main__":
             env(
                 net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
                 sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
-                out_csv_name="../../outputs/4x4_grid/ppo/ppo",
+                output_file="../../outputs/4x4_grid/ppo/ppo",
                 use_gui=True,
                 num_seconds=1000,  # ?episode length..
                 render_mode="human",

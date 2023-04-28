@@ -44,7 +44,7 @@ if __name__ == "__main__":
             env(
                 net_file=net_dir_path + "nets/2_station_strip/2_station_strip.net.xml",
                 sim_file=net_dir_path + "nets/2_station_strip/2_station_strip.sumocfg",
-                out_csv_name="../../outputs/2_station_strip/dqn/dqn.py",
+                output_file="../../outputs/2_station_strip/dqn/dqn.py",
                 use_gui=True,
                 num_seconds=5000,  # ?episode length..
                 render_mode="human",

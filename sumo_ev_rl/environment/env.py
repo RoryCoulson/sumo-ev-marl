@@ -1,22 +1,21 @@
-"""SUMO Environment for Traffic Signal Control."""
-
 import os
 import random
+from typing import Optional, Tuple, Union
 import sys
-from pathlib import Path
-from typing import Callable, Optional, Tuple, Union
 import gymnasium as gym
+import traci
 import numpy as np
 import pandas as pd
 import sumolib
-import traci
-from gymnasium.utils import seeding
-from gymnasium.utils.ezpickle import EzPickle
-from pettingzoo import AECEnv
-from pettingzoo.utils import agent_selector, wrappers
-from pettingzoo.utils.conversions import parallel_wrapper_fn
+from pathlib import Path
 from .charging_station import ChargingStation
+from pettingzoo import AECEnv
+from gymnasium.utils.ezpickle import EzPickle
+from gymnasium.utils import seeding
 from pyvirtualdisplay.smartdisplay import SmartDisplay
+from pettingzoo.utils.conversions import parallel_wrapper_fn
+from pettingzoo.utils import agent_selector, wrappers
+import logging
 
 if "SUMO_HOME" in os.environ:
     tools = os.path.join(os.environ["SUMO_HOME"], "tools")
@@ -24,16 +23,14 @@ if "SUMO_HOME" in os.environ:
 else:
     raise ImportError("Please declare the environment variable 'SUMO_HOME'")
 
-
 LIBSUMO = "LIBSUMO_AS_TRACI" in os.environ
 
 
 def env(**kwargs):
-    """Instantiate a PettingoZoo environment."""
+    # PettingZoo environment instance
     env = SumoEVEnvironmentPZ(**kwargs)
     env = wrappers.AssertOutOfBoundsWrapper(env)
     env = wrappers.OrderEnforcingWrapper(env)
-
     return env
 
 
@@ -41,75 +38,42 @@ parallel_env = parallel_wrapper_fn(env)
 
 
 class SumoEVEnvironment(gym.Env):
-    """SUMO Environment for EV Charging Stations.
-
-    TODO: reword this for ev when done:
-
-    Args:
-        net_file (str): SUMO .net.xml file
-        route_file (str): SUMO .rou.xml file
-        out_csv_name (Optional[str]): name of the .csv output with simulation results. If None, no output is generated
-        use_gui (bool): Whether to run SUMO simulation with the SUMO GUI
-        virtual_display (Optional[Tuple[int,int]]): Resolution of the virtual display for rendering
-        begin_time (int): The time step (in seconds) the simulation starts. Default: 0
-        num_seconds (int): Number of simulated seconds on SUMO. The time in seconds the simulation must end. Default: 3600
-        max_depart_delay (int): Vehicles are discarded if they could not be inserted after max_depart_delay seconds. Default: -1 (no delay)
-        waiting_time_memory (int): Number of seconds to remember the waiting time of a vehicle (see https://sumo.dlr.de/pydoc/traci._vehicle.html#VehicleDomain-getAccumulatedWaitingTime). Default: 1000
-        time_to_teleport (int): Time in seconds to teleport a vehicle to the end of the edge if it is stuck. Default: -1 (no teleport)
-        delta_time (int): Simulation seconds between actions. Default: 5 seconds
-        yellow_time (int): Duration of the yellow phase. Default: 2 seconds
-        min_green (int): Minimum green time in a phase. Default: 5 seconds
-        max_green (int): Max green time in a phase. Default: 60 seconds. Warning: This parameter is currently ignored!
-        single_agent (bool): If true, it behaves like a regular gym.Env. Else, it behaves like a MultiagentEnv (returns dict of observations, rewards, dones, infos).
-        reward_fn (str/function/dict): String with the name of the reward function used by the agents, a reward function, or dictionary with reward functions assigned to individual traffic lights by their keys.
-        observation_class (ObservationFunction): Inherited class which has both the observation function and observation space.
-        add_system_info (bool): If true, it computes system metrics (total queue, total waiting time, average speed) in the info dictionary.
-        add_per_agent_info (bool): If true, it computes per-agent (per-traffic signal) metrics (average accumulated waiting time, average queue) in the info dictionary.
-        sumo_seed (int/string): Random seed for sumo. If 'random' it uses a randomly chosen seed.
-        fixed_ts (bool): If true, it will follow the phase configuration in the route_file and ignore the actions given in the :meth:`step` method.
-        sumo_warnings (bool): If true, it will print SUMO warnings.
-        additional_sumo_cmd (str): Additional SUMO command line arguments.
-        render_mode (str): Mode of rendering. Can be 'human' or 'rgb_array'. Default: None
-    """
+    logging.basicConfig(level=logging.DEBUG)
 
     metadata = {
-        "render_modes": ["human", "rgb_array"],
+        "render_modes": ["human"],
     }
 
-    CONNECTION_LABEL = 0  # For traci multi-client support
+    # To support multi-client TraCI
+    CONNECTION_LABEL = 0
 
     def __init__(
         self,
         net_file: str,
         sim_file: str,
-        out_csv_name: Optional[str] = None,
-        use_gui: bool = False,
-        virtual_display: Tuple[int, int] = (3200, 1800),
         begin_time: int = 0,
         num_seconds: int = 10000,
+        use_gui: bool = False,
+        sumo_seed: Union[str, int] = "random",
+        sumo_warnings: bool = True,
+        add_per_agent_info: bool = True,
+        virtual_display: Tuple[int, int] = (3200, 1800),
         max_depart_delay: int = -1,
         waiting_time_memory: int = 1000,
         time_to_teleport: int = -1,
         delta_time: int = 5,
-        single_agent: bool = False,
         add_system_info: bool = True,
-        add_per_agent_info: bool = True,
-        sumo_seed: Union[str, int] = "random",
-        # fixed_ts: bool = False,
-        sumo_warnings: bool = True,
         additional_sumo_cmd: Optional[str] = None,
+        output_file: Optional[str] = None,
         render_mode: Optional[str] = None,
     ) -> None:
-        """Initialize the environment."""
-        assert render_mode is None or render_mode in self.metadata[
-            "render_modes"], "Invalid render mode."
-        self.render_mode = render_mode
-        self.virtual_display = virtual_display
-        self.disp = None
 
         self._net = net_file
         self._sim = sim_file
         self.use_gui = use_gui
+        self.render_mode = render_mode
+        self.virtual_display = virtual_display
+        self.display = None
 
         if self.use_gui or self.render_mode is not None:
             self._sumo_binary = sumolib.checkBinary("sumo-gui")
@@ -118,59 +82,53 @@ class SumoEVEnvironment(gym.Env):
 
         self.begin_time = begin_time
         self.sim_max_time = num_seconds
-        self.delta_time = delta_time  # seconds on sumo at each step
-        self.max_depart_delay = max_depart_delay  # Max wait time to insert a vehicle
-        # Number of seconds to remember the waiting time of a vehicle (see https://sumo.dlr.de/pydoc/traci._vehicle.html#VehicleDomain-getAccumulatedWaitingTime)
+        self.delta_time = delta_time
+        self.max_depart_delay = max_depart_delay
         self.waiting_time_memory = waiting_time_memory
         self.time_to_teleport = time_to_teleport
-        self.single_agent = single_agent
         self.sumo_seed = sumo_seed
-        # self.fixed_ts = fixed_ts
         self.sumo_warnings = sumo_warnings
         self.additional_sumo_cmd = additional_sumo_cmd
         self.add_system_info = add_system_info
         self.add_per_agent_info = add_per_agent_info
         self.label = str(SumoEVEnvironment.CONNECTION_LABEL)
         SumoEVEnvironment.CONNECTION_LABEL += 1
-        self.sumo = None
+        # TraCI connection with SUMO
+        self.conn = None
         self.cumulative_mean_wait_time = 0
         self.cumulative_total_wait_time = 0
         self.mean_rewards = 0
 
         if LIBSUMO:
-            # Start only to retrieve traffic light information
             traci.start([sumolib.checkBinary("sumo"), "-n", self._net])
-            conn = traci
+            traci_connection = traci
         else:
             traci.start([sumolib.checkBinary("sumo"), "-n", self._net],
                         label="init_connection" + self.label)
-            conn = traci.getConnection("init_connection" + self.label)
+            traci_connection = traci.getConnection(
+                "init_connection" + self.label)
 
-        self.cs_ids = list(conn.chargingstation.getIDList())
+        self.cs_ids = list(traci_connection.chargingstation.getIDList())
         self.cs_edges = {}
         for cs_id in self.cs_ids:
-            lane = conn.chargingstation.getLaneID(cs_id)
-            edge = conn.lane.getEdgeID(lane)
+            lane = traci_connection.chargingstation.getLaneID(cs_id)
+            edge = traci_connection.lane.getEdgeID(lane)
             self.cs_edges[cs_id] = edge
 
+        # Initialise charging station agents
         self.charging_stations = {
-            cs: ChargingStation(
-                self,
-                cs,
-                conn,
-            )
+            cs: ChargingStation(self, cs, traci_connection)
             for cs in self.cs_ids
         }
-        # initialise the stations' close stations
+        # Initialise the stations' closest stations
         for cs in self.charging_stations.values():
             cs.get_close_stations()
 
-        print('charging_stations:', self.charging_stations)
+        logging.debug(f"Charging stations: {self.charging_stations}")
+
+        traci_connection.close()
 
         self.charging_stations_busy_vals = {cs: 0 for cs in self.cs_ids}
-
-        conn.close()
-
         self.cumulative_rewards = [0 for _ in self.cs_ids]
         self.cumulative_diff_rewards = [0 for _ in self.cs_ids]
         self.prev_rewards = {cs: 0 for cs in self.cs_ids}
@@ -181,10 +139,10 @@ class SumoEVEnvironment(gym.Env):
         self.total_metrics = []
 
         self.vehicles = dict()
-        self.reward_range = (-float("inf"), float("inf"))  # ?
+        self.reward_range = (-float("inf"), float("inf"))
         self.episode = 0
         self.metrics = []
-        self.out_csv_name = out_csv_name
+        self.output_file = output_file
         self.observations = {cs: None for cs in self.cs_ids}
         self.rewards = {cs: None for cs in self.cs_ids}
 
@@ -212,32 +170,22 @@ class SumoEVEnvironment(gym.Env):
             sumo_cmd.extend(self.additional_sumo_cmd.split())
         if self.use_gui or self.render_mode is not None:
             sumo_cmd.extend(["--start", "--quit-on-end"])
-            if self.render_mode == "rgb_array":
-                sumo_cmd.extend(
-                    ["--window-size", f"{self.virtual_display[0]},{self.virtual_display[1]}"])
-
-                print("Creating a virtual display.")
-                self.disp = SmartDisplay(size=self.virtual_display)
-                self.disp.start()
-                print("Virtual display started.")
         if LIBSUMO:
             traci.start(sumo_cmd)
-            self.sumo = traci
+            self.conn = traci
         else:
             traci.start(sumo_cmd, label=self.label)
-            self.sumo = traci.getConnection(self.label)
+            self.conn = traci.getConnection(self.label)
         if self.use_gui or self.render_mode is not None:
-            self.sumo.gui.setSchema(traci.gui.DEFAULT_VIEW, "real world")
+            self.conn.gui.setSchema(traci.gui.DEFAULT_VIEW, "real world")
 
     def reset(self, seed: Optional[int] = None, **kwargs):
-        """Reset the environment."""
         super().reset(seed=seed, **kwargs)
-        print('reset')
+        logging.debug("Reset")
         if self.episode != 0:
             self.num_steps = self.curr_sim_step
-
             self.close()
-            self.save_csv(self.out_csv_name, self.episode)
+            self.save_csv(self.output_file, self.episode)
         self.episode += 1
         self.metrics = []
         if seed is not None:
@@ -246,11 +194,7 @@ class SumoEVEnvironment(gym.Env):
         self._start_simulation()
 
         self.charging_stations = {
-            cs: ChargingStation(
-                self,
-                cs,
-                self.sumo,
-            )
+            cs: ChargingStation(self, cs, self.conn)
             for cs in self.cs_ids
         }
         # initialise the stations' close stations
@@ -259,96 +203,48 @@ class SumoEVEnvironment(gym.Env):
 
         self.vehicles = dict()
 
-        if self.single_agent:
-            return self._compute_observations()[self.cs_ids[0]], self._compute_info()
-        else:
-            return self._compute_observations()
+        return self._compute_observations()
 
+    # Return current SUMO simulation second
     @property
     def sim_step(self) -> float:
-        """Return current simulation second on SUMO."""
-        return self.sumo.simulation.getTime()
+        return self.conn.simulation.getTime()
 
+    # Return only the EVs currently in the simulation
     def get_evs(self):
-        vehicles = self.sumo.vehicle.getIDList()
-        evs = [v for v in vehicles if self.sumo.vehicle.getParameter(
+        vehicles = self.conn.vehicle.getIDList()
+        evs = [v for v in vehicles if self.conn.vehicle.getParameter(
             v, "has.battery.device") == "true"]
-
         return evs
 
-    def remove_stuck(self):
-        pass
-        # #todo remove vehicles stuck at junction
-        # vehicles = self.sumo.vehicle.getIDList()
-        # # for v in vehicles:
-        # #     if self.sumo.vehicle.atJunction(v) and self.sumo.vehicle.getWaitingTime(v) > 20:
-        # #         self.sumo.vehicle.remove(v)
-        # #todo remove vehicles repeatedly trying to change lanes
-        # self.sumo.vehicle.getLaneChangeState
-        # # colliding_vehicles = self.sumo.simulation.getCollidingVehiclesIDList()
-        # # print('colliding_vehicles:', colliding_vehicles)
-        # # for v in colliding_vehicles:
-        # #     self.sumo.vehicle.remove(v)
-
+    # Dynamically update the colour of the vehicles according to their battery levels
     def update_color(self):
-        # Dynamically change colour of the vehicles depending on their batteries
         evs = self.get_evs()
-
-        for vehicle in self.sumo.vehicle.getIDList():
-            self.sumo.vehicle.setLaneChangeMode(vehicle, 1)
-
         for vehicle in evs:
-            max_battery = float(self.sumo.vehicle.getParameter(
+            max_battery = float(self.conn.vehicle.getParameter(
                 vehicle, 'device.battery.maximumBatteryCapacity'))
-
-            battery = float(self.sumo.vehicle.getParameter(
+            battery = float(self.conn.vehicle.getParameter(
                 vehicle, 'device.battery.actualBatteryCapacity'))
-
-            if battery == -1:  # ?
+            # Set random battery to vehicle when entering the simulation
+            if battery == -1:
                 # ? change '1' to something like within range of the closest charging station?
                 battery = random.randint(1, max_battery)
-                self.sumo.vehicle.setParameter(
+                self.conn.vehicle.setParameter(
                     vehicle, 'device.battery.actualBatteryCapacity', str(battery))
 
             battery_percent = (battery/max_battery) * 100
-
-            # # (for smooth battery colouring)
+            # Green for full and red for low/no charge
             green = battery_percent * 2.55
             red = 255 - green
 
-            # # binary colouring to tell if low or not
-            # curr_color = self.sumo.vehicle.getColor(vehicle)
-            # # (only setting colour at start)
-            # if curr_color == (128, 128, 0, 255):
-            #     # matching with classes
-            #     if battery_percent <= 10:
-            #         red = 255
-            #         green = 0
-            #     elif battery_percent <= 20:
-            #         red = 175
-            #         green = 80
-            #     elif battery_percent <= 30:
-            #         red = 125
-            #         green = 130
-            #     else:
-            #         green = 255
-            #         red = 0
+            # Update colour of the vehicles:
+            self.conn.vehicle.setColor(vehicle, [red, green, 0, 255])
 
-            # update color of the vehicles:
-            self.sumo.vehicle.setColor(vehicle, [red, green, 0, 255])
-
+    # Run simulation step by applying actions, calculating rewards and computing next steps observations
     def step(self, actions: Union[dict, int]):
-        """Apply the action(s) and then step the simulation for delta_time seconds.
+        logging.debug("Step")
+        logging.debug("Actions: {actions}")
 
-        Args:
-            action (Union[dict, int]): action(s) to be applied to the environment.
-            If single_agent is True, action is an int, otherwise it expects a dict with keys corresponding to traffic signal ids.
-        """
-        print('STEP')
-        print(f'ACTIONS: {actions}')
-
-        # ? No action what to do? Nothing?
-        # No action, follow fixed TL defined in self.phases <- update
         if actions is None or actions == {}:
             for _ in range(self.delta_time):
                 self._sumo_step()
@@ -357,45 +253,25 @@ class SumoEVEnvironment(gym.Env):
             self._run_steps()
 
         self.update_color()
-        self.remove_stuck()
 
         observations = self._compute_observations()
         rewards = self._compute_rewards()
         dones = self._compute_dones()
-        # ? update this? maybe not
-        terminated = False  # there are no 'terminal' states in this environment
-        truncated = dones["__all__"]  # episode ends when sim_step >= max_steps
+        # Episode ends when reached max seconds
+        terminated = False
+        truncated = dones["__all__"]
         info = self._compute_info()
 
-        if self.single_agent:
-            return observations[self.cs_ids[0]], rewards[self.cs_ids[0]], terminated, truncated, info
-        else:
-            return observations, rewards, dones, info
+        return observations, rewards, dones, info
 
     def _run_steps(self):
-        # ? no special update needed for each station no within step?
         self._sumo_step()
-        # for cs in self.cs_ids:
-        #     self.charging_stations[cs].update()
 
+    # Chose to reroute the vehicles for each charging station
     def _apply_actions(self, actions):
-        """Chose to reroute the next vehicle for the charging station
-
-        Args:
-            actions: If single-agent, actions is an int between 0 and self.num_vehicles
-                     If multiagent, actions is a dict {cs_id : ?} #?
-        """
-
-        # self.single_agent = False  # todo: remove the single_agent stuff
-        if self.single_agent:
-            # close_vehicles = self.observations[cs]
-            cs = list(self.charging_stations.keys())[0]
+        for cs, action in actions.items():
             close_vehicle = self.charging_stations[cs].consider_vehicle
-            self.handle_actions(actions, close_vehicle, cs)
-        else:
-            for cs, action in actions.items():
-                close_vehicle = self.charging_stations[cs].consider_vehicle
-                self.handle_actions(action, close_vehicle, cs)
+            self.handle_actions(action, close_vehicle, cs)
 
     # Logic for applying actions
     def handle_actions(self, action, close_vehicle, cs):
@@ -403,9 +279,9 @@ class SumoEVEnvironment(gym.Env):
         self.charging_stations[cs].remove_rerouted_vehicles()
 
         if action == 0 and close_vehicle:
-            battery = float(self.sumo.vehicle.getParameter(
+            battery = float(self.conn.vehicle.getParameter(
                 close_vehicle, 'device.battery.actualBatteryCapacity'))
-            max_battery = float(self.sumo.vehicle.getParameter(
+            max_battery = float(self.conn.vehicle.getParameter(
                 close_vehicle, 'device.battery.maximumBatteryCapacity'))
 
             battery = (battery/max_battery)
@@ -484,13 +360,13 @@ class SumoEVEnvironment(gym.Env):
         return self.charging_stations[cs_id].action_space
 
     def _sumo_step(self):
-        self.sumo.simulationStep()
+        self.conn.simulationStep()
 
     def _get_system_info(self):
         vehicles = self.get_evs()
         # speeds = [self.sumo.vehicle.getSpeed(vehicle) for vehicle in vehicles]
 
-        waiting_times = [self.sumo.vehicle.getWaitingTime(
+        waiting_times = [self.conn.vehicle.getWaitingTime(
             vehicle) for vehicle in vehicles]
 
         self.cumulative_total_wait_time += sum(waiting_times)
@@ -550,18 +426,18 @@ class SumoEVEnvironment(gym.Env):
 
     def close(self):
         """Close the environment and stop the SUMO simulation."""
-        if self.sumo is None:
+        if self.conn is None:
             return
 
         if not LIBSUMO:
             traci.switch(self.label)
         traci.close()
 
-        if self.disp is not None:
-            self.disp.stop()
-            self.disp = None
+        if self.display is not None:
+            self.display.stop()
+            self.display = None
 
-        self.sumo = None
+        self.conn = None
 
     def __del__(self):
         """Close the environment and stop the SUMO simulation."""
@@ -579,25 +455,25 @@ class SumoEVEnvironment(gym.Env):
             #                          f"temp/img{self.sim_step}.jpg",
             #                          width=self.virtual_display[0],
             #                          height=self.virtual_display[1])
-            img = self.disp.grab()
+            img = self.display.grab()
             return np.array(img)
 
-    def save_csv(self, out_csv_name, episode):
+    def save_csv(self, output_file, episode):
         """Save metrics of the simulation to a .csv file.
 
         Args:
-            out_csv_name (str): Path to the output .csv file. E.g.: "results/my_results
+            output_file (str): Path to the output .csv file. E.g.: "results/my_results
             episode (int): Episode number to be appended to the output file name.
         """
-        if out_csv_name is not None:
+        if output_file is not None:
             df = pd.DataFrame(self.metrics)
-            Path(Path(out_csv_name).parent).mkdir(parents=True, exist_ok=True)
-            df.to_csv(out_csv_name +
+            Path(Path(output_file).parent).mkdir(parents=True, exist_ok=True)
+            df.to_csv(output_file +
                       f"_conn{self.label}_ep{episode}" + ".csv", index=False)
 
             df = pd.DataFrame(self.total_metrics)
-            Path(Path(out_csv_name).parent).mkdir(parents=True, exist_ok=True)
-            df.to_csv(out_csv_name +
+            Path(Path(output_file).parent).mkdir(parents=True, exist_ok=True)
+            df.to_csv(output_file +
                       f"_total_metrics_{self.label}" + ".csv", index=False)
 
     def encode(self, state, cs_id):
@@ -619,8 +495,8 @@ class SumoEVEnvironmentPZ(AECEnv, EzPickle):
     The arguments are the same as for :py:class:`sumo_ev_rl.environment.env.SumoEVEnvironment`.
     """
 
-    metadata = {"render.modes": ["human", "rgb_array"],
-                "name": "sumo_ev_rl_v0", "is_parallelizable": True}
+    metadata = {"render.modes": ["human"],
+                "name": "sumo_ev_marl_v0", "is_parallelizable": True}
 
     def __init__(self, **kwargs):
         """Initialize the environment."""
@@ -683,9 +559,9 @@ class SumoEVEnvironmentPZ(AECEnv, EzPickle):
         """Render the environment."""
         return self.env.render(mode)
 
-    def save_csv(self, out_csv_name, episode):
+    def save_csv(self, output_file, episode):
         """Save metrics of the simulation to a .csv file."""
-        self.env.save_csv(out_csv_name, episode)
+        self.env.save_csv(output_file, episode)
 
     def step(self, action):
         """Step the environment."""
@@ -705,7 +581,6 @@ class SumoEVEnvironmentPZ(AECEnv, EzPickle):
         if self._agent_selector.is_last():
             self.env._run_steps()
             self.env.update_color()
-            self.env.remove_stuck()
             self.env._compute_observations()
             self.rewards = self.env._compute_rewards()
             self.env._compute_info()
