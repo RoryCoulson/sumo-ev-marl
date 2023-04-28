@@ -506,15 +506,13 @@ class SumoEVEnvironment(gym.Env):
         accumulated_waiting_time = [
             self.charging_stations[cs].get_lane_wait_time() for cs in self.cs_ids
         ]
-        average_speed = [self.charging_stations[cs].get_average_speed()
-                         for cs in self.cs_ids]
+
         info = {}
         print('REWARDS:', self.rewards)
 
         for i, cs in enumerate(self.cs_ids):
             info[f"{cs}_stopped"] = stopped[i]
             info[f"{cs}_accumulated_waiting_time"] = accumulated_waiting_time[i]
-            info[f"{cs}_average_speed"] = average_speed[i]
             info[f"{cs}_reward"] = self.rewards[cs]
 
             # if self.charging_stations[cs].consider_vehicle:

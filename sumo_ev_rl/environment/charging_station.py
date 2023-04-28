@@ -26,6 +26,7 @@ CLOSEST_STATIONS_NUM = 2
 
 class ChargingStation:
     logging.basicConfig(level=logging.DEBUG)
+
     def __init__(self, env, cs_id, sumo):
         self.id = cs_id
         self.env = env
@@ -94,7 +95,6 @@ class ChargingStation:
             self.edge_id, destination_edge_id).edges
         self.rerouted_vehicles.add(vehicle_id)
         new_route = route_to_station[:-1] + route_to_destination
-        
         logging.debug(f'New route: (vehicle: {vehicle_id}): {new_route}')
 
         self.sumo.vehicle.setRoute(vehicle_id, new_route)
@@ -102,64 +102,36 @@ class ChargingStation:
             vehicle_id, self.edge_id, pos=self.cs_end_pos,  duration=CHARGING_DURATION)
 
     def compute_observation(self):
-        """Computes the observation of the charging station."""
         charging_station_edges = self.env.cs_edges.values()
-
+        # Get driving distance of EVs in close proximity not already rerouted or decided upon
         dists_to_station = {v: self.get_dist_to_station(v) for v in self.get_close_evs() if not set(
             self.sumo.vehicle.getRoute(v)).intersection(set(charging_station_edges)) and v not in self.decided_vehicles}
+        logging.debug(
+            f"Distances to station of close evs, (station: {self.id}): {dists_to_station}")
 
-        print(
-            f"dists_to_station of close evs, (cs: {self.id}): {dists_to_station}")
-
-        close_vehicle_battery = self.get_closest_battery(dists_to_station)
-
-        # close_vehicle_battery = -1
-
-        if close_vehicle_battery == -1:
-            # ?(wait_time or density not necessary if no vehicles.. set to zero ok?)
+        closest_vehicle_battery = self.get_closest_battery(dists_to_station)
+        # If no close vehicle detected return observation of zeros
+        if closest_vehicle_battery == None:
             return np.zeros(2 + CLOSEST_STATIONS_NUM, dtype=np.float32)
 
+        # Get busy values of this stations and close stations
         busy_val = self.get_busy_val()
-        # the busy values of nearby stations
         close_busy_vals = self.get_close_busy_vals()
-        # TODO test
-        print('rerouted_vehicles:', self.rerouted_vehicles)
 
         observation = np.array(
-            [close_vehicle_battery, busy_val] + close_busy_vals, dtype=np.float32)
-        print(
-            f"OBSERVATION (cs: {self.id}): {observation}, consider_vehicle: {self.consider_vehicle}, busy_val: {busy_val}, close_busy_vals: {close_busy_vals}")
+            [closest_vehicle_battery, busy_val] + close_busy_vals, dtype=np.float32)
+        logging.debug(f"Observation (cs: {self.id}): {observation}")
+        logging.debug(f"Consider vehicle: {self.consider_vehicle}")
+        logging.debug(
+            f"Busy value: {busy_val}, Close busy values: {close_busy_vals}")
         return observation
 
     def compute_reward(self):
-        """Computes the reward of the charging station."""
         return self.battery_wait_time_reward()
 
-    # Combination of rewarding agents that charge low battery vehicles and only when best depending on their wait times
+    # Reward combining of battery and wait time weightings
     def battery_wait_time_reward(self):
-        reward = self.not_charged_reward + self.charge_reward
-
-        return reward
-
-    def get_average_speed(self) -> float:
-        """Returns the average speed normalized by the maximum allowed speed of the vehicles in the intersection.
-
-        Obs: If there are no vehicles in the intersection, it returns 1.0.
-        """
-        avg_speed = 0.0
-        vehs = self._get_veh_list()
-        if len(vehs) == 0:
-            return 1.0
-        for v in vehs:
-            avg_speed += self.sumo.vehicle.getSpeed(
-                v) / self.sumo.vehicle.getAllowedSpeed(v)
-        return avg_speed / len(vehs)
-
-    def get_pressure(self):
-        """Returns the pressure (#veh leaving - #veh approaching) of the intersection."""
-        return sum(self.sumo.lane.getLastStepVehicleNumber(lane) for lane in self.out_lanes) - sum(
-            self.sumo.lane.getLastStepVehicleNumber(lane) for lane in self.lanes
-        )
+        return self.not_charged_reward + self.charge_reward
 
     def get_closest_battery(self, dists_to_station) -> np.ndarray:
 
@@ -177,7 +149,7 @@ class ChargingStation:
         if len(consider_vehicles_dists_batteries) == 0:
             print(f"No vehicles to consider, (station: {self.id})")
             self.consider_vehicle = None
-            return -1
+            return None
 
         # get first (closest)
         consider_vehicle_dist_battery = consider_vehicles_dists_batteries[0]
