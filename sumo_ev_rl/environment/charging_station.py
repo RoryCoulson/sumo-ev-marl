@@ -79,7 +79,7 @@ class ChargingStation:
                 raise NotImplementedError(
                     f"Reward function {self.reward_fn} not implemented")
 
-        self.observation_fn = self.env.observation_class(self)
+        # self.observation_fn = self.env.observation_class(self)
 
         # Lane to the charging station (if it applies to a single lane), in which if got busy would affect the access to the station
         # (Assumption: each station has a single lane to it and a single lane out of it...)
@@ -89,7 +89,10 @@ class ChargingStation:
 
         self.lane_length = self.sumo.lane.getLength(self.lane_id)
 
-        self.observation_space = self.observation_fn.observation_space()
+        self.observation_space = spaces.Box(
+            low=np.zeros(2 + CLOSEST_STATIONS_NUM, dtype=np.float32),
+            high=np.ones(2 + CLOSEST_STATIONS_NUM, dtype=np.float32),
+        )
 
         # retrieve the incoming edges of the destination of an edge
         net = sumolib.net.readNet(self.env._net)
@@ -159,7 +162,33 @@ class ChargingStation:
 
     def compute_observation(self):
         """Computes the observation of the charging station."""
-        return self.observation_fn()
+        charging_station_edges = self.env.cs_edges.values()
+
+        dists_to_station = {v: self.get_dist_to_station(v) for v in self.get_close_evs() if not set(
+            self.sumo.vehicle.getRoute(v)).intersection(set(charging_station_edges)) and v not in self.decided_vehicles}
+
+        print(
+            f"dists_to_station of close evs, (cs: {self.id}): {dists_to_station}")
+
+        close_vehicle_battery = self.get_closest_battery(dists_to_station)
+
+        # close_vehicle_battery = -1
+
+        if close_vehicle_battery == -1:
+            # ?(wait_time or density not necessary if no vehicles.. set to zero ok?)
+            return np.zeros(2 + CLOSEST_STATIONS_NUM, dtype=np.float32)
+
+        busy_val = self.get_busy_val()
+        # the busy values of nearby stations
+        close_busy_vals = self.get_close_busy_vals()
+        # TODO test
+        print('rerouted_vehicles:', self.rerouted_vehicles)
+
+        observation = np.array(
+            [close_vehicle_battery, busy_val] + close_busy_vals, dtype=np.float32)
+        print(
+            f"OBSERVATION (cs: {self.id}): {observation}, consider_vehicle: {self.consider_vehicle}, busy_val: {busy_val}, close_busy_vals: {close_busy_vals}")
+        return observation
 
     def compute_reward(self):
         """Computes the reward of the charging station."""

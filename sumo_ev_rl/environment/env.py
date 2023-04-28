@@ -22,7 +22,6 @@ from pettingzoo import AECEnv
 from pettingzoo.utils import agent_selector, wrappers
 from pettingzoo.utils.conversions import parallel_wrapper_fn
 
-from .observations import DefaultObservationFunction, ObservationFunction
 # from .traffic_signal import TrafficSignal
 from .charging_station import ChargingStation
 from pyvirtualdisplay.smartdisplay import SmartDisplay
@@ -35,6 +34,7 @@ def env(**kwargs):
     env = SumoEVEnvironmentPZ(**kwargs)
     env = wrappers.AssertOutOfBoundsWrapper(env)
     env = wrappers.OrderEnforcingWrapper(env)
+    
     return env
 
 
@@ -98,7 +98,6 @@ class SumoEVEnvironment(gym.Env):
         delta_time: int = 5,  # ? adjust to change time per step in the simulation
         single_agent: bool = False,
         reward_fn: Union[str, Callable, dict] = "battery",
-        observation_class: ObservationFunction = DefaultObservationFunction,
         add_system_info: bool = True,
         add_per_agent_info: bool = True,
         sumo_seed: Union[str, int] = "random",
@@ -160,8 +159,6 @@ class SumoEVEnvironment(gym.Env):
             lane = conn.chargingstation.getLaneID(cs_id)
             edge = conn.lane.getEdgeID(lane)
             self.cs_edges[cs_id] = edge
-
-        self.observation_class = observation_class
 
         if isinstance(self.reward_fn, dict):
             self.charging_stations = {

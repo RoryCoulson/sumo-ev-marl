@@ -2,8 +2,7 @@ import setuptools
 from setuptools import setup, find_packages
 
 setup(
-    name="SUMO_EV",
+    name="sumo-ev-marl",
     version="0.0.1",
-    # long_description=open("README.md").read(),
     packages=find_packages()
 )
