@@ -15,5 +15,9 @@
         <battery-output value="battery.xml"/>
         <chargingstations-output value="chargingstations.xml"/>
     </output> -->
+    <report>
+        <verbose value="true"/>
+        <duration-log.statistics value="true"/>
+    </report>
 
 </configuration>
