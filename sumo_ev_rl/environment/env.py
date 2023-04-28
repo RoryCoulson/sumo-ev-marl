@@ -509,8 +509,6 @@ class SumoEVEnvironment(gym.Env):
         }
 
     def _get_per_agent_info(self):
-        stopped = [self.charging_stations[cs].get_total_queued()
-                   for cs in self.cs_ids]
         accumulated_waiting_time = [
             self.charging_stations[cs].get_lane_wait_time() for cs in self.cs_ids
         ]
@@ -519,7 +517,6 @@ class SumoEVEnvironment(gym.Env):
         print('REWARDS:', self.rewards)
 
         for i, cs in enumerate(self.cs_ids):
-            info[f"{cs}_stopped"] = stopped[i]
             info[f"{cs}_accumulated_waiting_time"] = accumulated_waiting_time[i]
             info[f"{cs}_reward"] = self.rewards[cs]
 
@@ -539,7 +536,6 @@ class SumoEVEnvironment(gym.Env):
             # Reset here so that you can still plot
             self.charging_stations[cs].reset_rewards()
 
-        info["agents_total_stopped"] = sum(stopped)
         info["agents_total_accumulated_waiting_time"] = sum(
             accumulated_waiting_time)
         info["cumulative_penalties"] = self.cumulative_penalties

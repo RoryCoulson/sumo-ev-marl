@@ -65,7 +65,7 @@ class ChargingStation:
         # Boolean action: either charge detected vehicle (1) or don't (0)
         self.action_space = spaces.Discrete(2)
 
-    # Get the two closest stations in driving distance from current
+    # Get the closest stations in driving distance from current
     def get_close_stations(self):
         dists_to_stations = {}
         for cs_id in self.env.charging_stations.keys():
@@ -79,6 +79,35 @@ class ChargingStation:
 
         self.closest_station_ids = sorted(dists_to_stations, key=dists_to_stations.get)[
             :CLOSEST_STATIONS_NUM]
+
+    def compute_observation(self):
+        charging_station_edges = self.env.cs_edges.values()
+        # Get driving distance of EVs in close proximity not already rerouted or decided upon
+        dists_to_station = {v: self.get_dist_to_station(v) for v in self.get_close_evs() if not set(
+            self.sumo.vehicle.getRoute(v)).intersection(set(charging_station_edges)) and v not in self.decided_vehicles}
+        logging.debug(
+            f"Distances to station of close evs, (station: {self.id}): {dists_to_station}")
+
+        closest_vehicle_battery = self.get_closest_battery(dists_to_station)
+
+        # If no close vehicle detected return observation of zeros
+        if closest_vehicle_battery == None:
+            return np.zeros(2 + CLOSEST_STATIONS_NUM, dtype=np.float32)
+
+        # Get busy values of this stations and close stations
+        busy_val = self.get_busy_val()
+        close_busy_vals = self.get_close_busy_vals()
+
+        logging.debug(f"close_busy_vals: {close_busy_vals}")
+        logging.debug(f"busy_val: {busy_val}")
+        logging.debug(f"close_busy_vals: {close_busy_vals}")
+
+        observation = np.array(
+            [closest_vehicle_battery, busy_val] + close_busy_vals, dtype=np.float32)
+        logging.debug(f"Observation (cs: {self.id}): {observation}")
+        logging.debug(
+            f"Busy value: {busy_val}, Close busy values: {close_busy_vals}")
+        return observation
 
     def reset_rewards(self):
         self.charge_reward = 0
@@ -116,35 +145,6 @@ class ChargingStation:
         self.sumo.vehicle.setRoute(vehicle_id, new_route)
         self.sumo.vehicle.setStop(
             vehicle_id, self.edge_id, pos=self.cs_end_pos,  duration=CHARGING_DURATION)
-
-    def compute_observation(self):
-        charging_station_edges = self.env.cs_edges.values()
-        # Get driving distance of EVs in close proximity not already rerouted or decided upon
-        dists_to_station = {v: self.get_dist_to_station(v) for v in self.get_close_evs() if not set(
-            self.sumo.vehicle.getRoute(v)).intersection(set(charging_station_edges)) and v not in self.decided_vehicles}
-        logging.debug(
-            f"Distances to station of close evs, (station: {self.id}): {dists_to_station}")
-
-        closest_vehicle_battery = self.get_closest_battery(dists_to_station)
-
-        # If no close vehicle detected return observation of zeros
-        if closest_vehicle_battery == None:
-            return np.zeros(2 + CLOSEST_STATIONS_NUM, dtype=np.float32)
-
-        # Get busy values of this stations and close stations
-        busy_val = self.get_busy_val()
-        close_busy_vals = self.get_close_busy_vals()
-
-        logging.debug(f"close_busy_vals: {close_busy_vals}")
-        logging.debug(f"busy_val: {busy_val}")
-        logging.debug(f"close_busy_vals: {close_busy_vals}")
-
-        observation = np.array(
-            [closest_vehicle_battery, busy_val] + close_busy_vals, dtype=np.float32)
-        logging.debug(f"Observation (cs: {self.id}): {observation}")
-        logging.debug(
-            f"Busy value: {busy_val}, Close busy values: {close_busy_vals}")
-        return observation
 
     def compute_reward(self):
         return self.battery_wait_time_reward()
@@ -240,8 +240,8 @@ class ChargingStation:
         self.consider_vehicle_remaining_range = self.get_remaining_range(
             self.consider_vehicle)
 
-        # Get the busy values of the close stations that are in range and accessible to the vehicle
-        for cs_id in self.closest_station_ids:  # ! updated since clean!
+        # Get only the close stations that are in range and accessible by the considered vehicle
+        for cs_id in self.closest_station_ids:
             cs2_edge = self.env.cs_edges[cs_id]
             veh_to_station_distance = self.sumo.simulation.getDistanceRoad(
                 last_curr_edge_id, 0, cs2_edge, 0, isDriving=True)
@@ -258,6 +258,7 @@ class ChargingStation:
         logging.debug(
             f"Closest stations: {self.closest_stations_to_considered_vehicle}")
 
+        # Get the busy values of the close stations that are in range and accessible to the vehicle
         busy_vals = []
         if self.closest_station_ids_in_range:
             busy_vals = [
@@ -281,6 +282,7 @@ class ChargingStation:
         self.busy_val = 1 if self.busy_val > 1 else self.busy_val
         return self.busy_val
 
+    # Calculate the estimated remaining range using the previous vehicle stats
     def get_remaining_range(self, vehicle):
         # Get remaining range of considered vehicle
         energy_consumed = float(self.sumo.vehicle.getParameter(
@@ -326,7 +328,6 @@ class ChargingStation:
     def get_close_busy_vals_diff(self):
         close_busy_vals_diff = []
 
-        # ! updated since clean!
         logging.debug(
             f'Closest station ids in range of considered vehicle: {self.closest_station_ids_in_range}')
 
@@ -338,25 +339,22 @@ class ChargingStation:
         logging.debug(f'Close busy values difference: {close_busy_vals_diff}')
         return close_busy_vals_diff
 
-    # Get distance from vehicle to charging station
-
+    # Get subscription distance from vehicle to charging station
     def get_close_evs(self):
         results = self.sumo.chargingstation.getContextSubscriptionResults(
             self.id)
-        # print('results:', results)
         vehicles_ids = results.keys()
         close_evs = [v for v in vehicles_ids if v in self.sumo.vehicle.getIDList() and self.sumo.vehicle.getParameter(
             v, "has.battery.device") == "true"]
 
-        # print(f'(cs: {self.id}) subscription results:', results)
-        print(f'station {self.id} -> close evs: {close_evs}')
+        logging.debug(f"Station ({self.id}) subscription results: {results}")
+        logging.debug(f"Close EVs: {close_evs}")
         return close_evs
 
+    # Returns the driving distance of a vehicle to this station
     def get_dist_to_station(self, vehicle):
         vehicle_edge = self.sumo.vehicle.getRoadID(
             vehicle)
-        # vehicle_pos = self.sumo.vehicle.getLanePosition(
-        #     vehicle)    # ? test - is this the correct for pos1
 
         dist_to_station = self.sumo.simulation.getDistanceRoad(
             vehicle_edge, 0, self.edge_id, self.cs_end_pos, isDriving=True)
@@ -373,11 +371,3 @@ class ChargingStation:
         max_battery = float(self.sumo.vehicle.getParameter(
             vehicle, 'device.battery.maximumBatteryCapacity'))
         return (battery/max_battery)
-
-    def get_total_queued(self) -> int:
-        """Returns the total number of vehicles halting."""
-        return self.sumo.lane.getLastStepHaltingNumber(self.lane_id)
-
-    def _get_veh_list(self):
-        veh_list = self.sumo.lane.getLastStepVehicleIDs(self.lane_id)
-        return veh_list
