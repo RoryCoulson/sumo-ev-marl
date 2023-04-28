@@ -42,8 +42,8 @@ if __name__ == "__main__":
         "4x4_grid",
         lambda _: PettingZooEnv(
             env(
-                net_file=net_dir_path + "nets/ev_stations-Rory/4x4_grid/4x4_grid.net.xml",
-                sim_file=net_dir_path + "nets/ev_stations-Rory/4x4_grid/4x4_grid.sumocfg",
+                net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
+                sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
                 out_csv_name="../../outputs/4x4_grid/dqn/dqn",
                 use_gui=True,
                 num_seconds=1000,  # ?episode length..

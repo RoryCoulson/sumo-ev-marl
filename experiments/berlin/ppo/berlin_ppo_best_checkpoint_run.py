@@ -34,8 +34,8 @@ if __name__ == "__main__":
         "berlin",
         lambda _: PettingZooEnv(
             env(
-                net_file=net_dir_path + "nets/ev_stations-Rory/berlin/berlin.net.xml",
-                sim_file=net_dir_path + "nets/ev_stations-Rory/berlin/berlin.sumocfg",
+                net_file=net_dir_path + "nets/berlin/berlin.net.xml",
+                sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
                 out_csv_name="../../outputs/berlin/ppo/best/best_run",
                 use_gui=True,
                 num_seconds=1000,  # ?episode length..
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         "-route",
         dest="route",
         type=str,
-        default=net_dir_path + "nets/ev_stations-Rory/berlin/berlin.rou.xml",
+        default=net_dir_path + "nets/berlin/berlin.rou.xml",
         help="Route definition xml file.\n",
     )
     # Add parameters for the model
@@ -94,8 +94,8 @@ if __name__ == "__main__":
     RESOLUTION = (3200, 1800)
 
     env = SumoEVEnvironment(
-        net_file=net_dir_path + "nets/ev_stations-Rory/berlin/berlin.net.xml",
-        sim_file=net_dir_path + "nets/ev_stations-Rory/berlin/berlin.sumocfg",
+        net_file=net_dir_path + "nets/berlin/berlin.net.xml",
+        sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
         out_csv_name=out_csv,
         use_gui=args.gui,
         num_seconds=args.seconds,

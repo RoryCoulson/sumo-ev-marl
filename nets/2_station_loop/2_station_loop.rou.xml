@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-03-24 14:27:10 by Eclipse SUMO netedit Version 1.16.0
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <!-- Vehicles, persons and containers (sorted by depart) -->
+
+    <vType id="soulEV65" minGap="2.50" maxSpeed="29.06" color="white" accel="1.0" decel="1.0" sigma="0.0" emissionClass="Energy/unknown">
+        <param key="has.battery.device" value="true"/>
+        <param key="airDragCoefficient" value="0.35"/>       <!-- https://www.evspecifications.com/en/model/e94fa0 -->
+        <param key="constantPowerIntake" value="100"/>       <!-- observed summer levels -->
+        <param key="frontSurfaceArea" value="2.6"/>          <!-- computed (ht-clearance) * width -->
+        <param key="internalMomentOfInertia" value="0.01"/>  <!-- guesstimate -->
+        <param key="maximumBatteryCapacity" value="500"/> <!-- was: 64000 -->
+        <param key="maximumPower" value="150000"/>           <!-- website as above -->
+        <param key="propulsionEfficiency" value=".98"/>      <!-- guesstimate value providing closest match to observed -->
+        <param key="radialDragCoefficient" value="0.1"/>     <!-- as above -->
+        <param key="recuperationEfficiency" value=".96"/>    <!-- as above -->
+        <param key="rollDragCoefficient" value="0.01"/>      <!-- as above -->
+        <param key="stoppingThreshold" value="0.1"/>         <!-- as above -->
+        <param key="vehicleMass" value="1830"/>              <!-- 1682kg curb wt + average 2 passengers / bags -->
+
+        <!-- <param key="actualBatteryCapacity" value="100"/> (think it's default /2 of max if not set)--> 
+    </vType>
+
+
+    <!-- <route id="route_cs_3" edges="1_to_2 2_to_3 3_to_5 5_to_7 7_to_8"/>
+    <route id="route_cs_4" edges="1_to_2 2_to_4 4_to_6 6_to_7 7_to_8"/>
+     -->
+    <route id="route_straight" edges="1_to_2 2_to_4 4_to_5 5_to_7 7_to_8 8_to_9"/>
+
+
+    <!-- <flow id="flow_n" route="route_cs_3" begin="0" end="10000" probability="0.03" departSpeed="max" departPos="base" departLane="best" type="soulEV65"  color="1,0,0">
+        <stop chargingStation="CS_3_to_5" duration="20"/>
+    </flow>
+    <flow id="flow_s" route="route_cs_4" begin="0" end="10000" probability="0.03" departSpeed="max" departPos="base" departLane="best" type="soulEV65"  color="0,1,0">
+        <stop chargingStation="CS_6_to_7" duration="20"/>
+    </flow> -->
+
+    <vehicle depart="0" id="1.0" route="route_straight" type="soulEV65" color="1,0,0"/>
+    <vehicle depart="0" id="2.0" route="route_straight" type="soulEV65" color="1,0,0"/>
+    <vehicle depart="0" id="3.0" route="route_straight" type="soulEV65" color="1,0,0"/>
+
+
+    <!-- <flow id="flow_s" route="route_straight" begin="0" end="100000" probability="0.03" departSpeed="max" departPos="base" departLane="best" type="soulEV65"  color="0,1,0"/> -->
+
+
+</routes>

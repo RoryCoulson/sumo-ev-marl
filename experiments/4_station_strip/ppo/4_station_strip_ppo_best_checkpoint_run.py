@@ -31,8 +31,8 @@ if __name__ == "__main__":
         "4_station_strip",
         lambda _: PettingZooEnv(
             env(
-                net_file=net_dir_path + "nets/ev_stations-Rory/4_station_strip/4_station_strip.net.xml",
-                sim_file=net_dir_path + "nets/ev_stations-Rory/4_station_strip/4_station_strip.sumocfg",
+                net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
+                sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
                 out_csv_name="../../outputs/4_station_strip/ppo/best/best_run",
                 use_gui=True,
                 num_seconds=5000,  # ?episode length..
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         "-route",
         dest="route",
         type=str,
-        default=net_dir_path + "nets/ev_stations-Rory/4_station_strip/4_station_strip.rou.xml",
+        default=net_dir_path + "nets/4_station_strip/4_station_strip.rou.xml",
         help="Route definition xml file.\n",
     )
     # Add parameters for the model
@@ -91,8 +91,8 @@ if __name__ == "__main__":
     RESOLUTION = (3200, 1800)
 
     env = SumoEVEnvironment(
-        net_file=net_dir_path + "nets/ev_stations-Rory/4_station_strip/4_station_strip.net.xml",
-        sim_file=net_dir_path + "nets/ev_stations-Rory/4_station_strip/4_station_strip.sumocfg",
+        net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
+        sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
         out_csv_name=out_csv,
         use_gui=args.gui,
         num_seconds=args.seconds,

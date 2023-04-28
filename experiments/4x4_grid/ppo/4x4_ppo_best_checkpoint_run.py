@@ -35,8 +35,8 @@ if __name__ == "__main__":
         "4x4_grid",
         lambda _: PettingZooEnv(
             env(
-                net_file=net_dir_path + "nets/ev_stations-Rory/4x4_grid/4x4_grid.net.xml",
-                sim_file=net_dir_path + "nets/ev_stations-Rory/4x4_grid/4x4_grid.sumocfg",
+                net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
+                sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
                 out_csv_name="../../outputs/4x4_grid/ppo/best/best_run",
                 use_gui=True,
                 num_seconds=1000,  # ?episode length..
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         "-route",
         dest="route",
         type=str,
-        default=net_dir_path + "nets/ev_stations-Rory/4x4_grid/4x4_grid.rou.xml",
+        default=net_dir_path + "nets/4x4_grid/4x4_grid.rou.xml",
         help="Route definition xml file.\n",
     )
     # Add parameters for the model
@@ -95,8 +95,8 @@ if __name__ == "__main__":
     RESOLUTION = (3200, 1800)
 
     env = SumoEVEnvironment(
-        net_file=net_dir_path + "nets/ev_stations-Rory/4x4_grid/4x4_grid.net.xml",
-        sim_file=net_dir_path + "nets/ev_stations-Rory/4x4_grid/4x4_grid.sumocfg",
+        net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
+        sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
         out_csv_name=out_csv,
         use_gui=args.gui,
         num_seconds=args.seconds,

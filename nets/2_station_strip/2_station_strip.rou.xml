@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-03-24 14:27:10 by Eclipse SUMO netedit Version 1.16.0
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <!-- Vehicles, persons and containers (sorted by depart) -->
+
+    <vType id="soulEV65" minGap="2.50" maxSpeed="29.06" color="white" accel="1.0" decel="1.0" sigma="0.0" emissionClass="Energy/unknown">
+        <param key="has.battery.device" value="true"/>
+        <param key="airDragCoefficient" value="0.35"/>       <!-- https://www.evspecifications.com/en/model/e94fa0 -->
+        <param key="constantPowerIntake" value="100"/>       <!-- observed summer levels -->
+        <param key="frontSurfaceArea" value="2.6"/>          <!-- computed (ht-clearance) * width -->
+        <param key="internalMomentOfInertia" value="0.01"/>  <!-- guesstimate -->
+        <param key="maximumBatteryCapacity" value="64000"/> <!-- was: 64000 -->
+        <param key="maximumPower" value="150000"/>           <!-- website as above -->
+        <param key="propulsionEfficiency" value=".98"/>      <!-- guesstimate value providing closest match to observed -->
+        <param key="radialDragCoefficient" value="0.1"/>     <!-- as above -->
+        <param key="recuperationEfficiency" value=".96"/>    <!-- as above -->
+        <param key="rollDragCoefficient" value="0.01"/>      <!-- as above -->
+        <param key="stoppingThreshold" value="0.1"/>         <!-- as above -->
+        <param key="vehicleMass" value="1830"/>              <!-- 1682kg curb wt + average 2 passengers / bags -->
+        <param key="actualBatteryCapacity" value="-1"/>      <!-- set to -1 so that you can reset each vehicle in flow to a random value at the start -->
+    </vType>
+
+
+    <route id="route_straight" edges="1_to_2 2_to_4 4_to_5 5_to_7 7_to_8"/>
+
+    <flow id="1" route="route_straight" begin="0" end="10000000" probability="0.1" departSpeed="max" departPos="base" departLane="best" type="soulEV65"  color=".5,.5,0"/>
+    <flow id="non_ev" route="route_straight" begin="0" end="10000000" probability="0.05" departSpeed="max" departPos="base" departLane="best"  color="0,0,1"/>
+
+</routes>

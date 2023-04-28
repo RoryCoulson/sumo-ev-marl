@@ -5,8 +5,8 @@ import sumo_ev_rl
 
 def test_api():
     env = sumo_ev_rl.env(
-        net_file="../nets/ev_stations-Rory/2_station_strip/2_station_strip.net.xml",
-        sim_file="../nets/ev_stations-Rory/2_station_strip/2_station_strip.sumocfg",
+        net_file="../nets/2_station_strip/2_station_strip.net.xml",
+        sim_file="../nets/2_station_strip/2_station_strip.sumocfg",
         out_csv_name="outputs/2_station_strip/test",
         use_gui=False,
         num_seconds=100,
@@ -17,8 +17,8 @@ def test_api():
 
 def test_parallel_api():
     env = sumo_ev_rl.parallel_env(
-        net_file="../nets/ev_stations-Rory/2_station_strip/2_station_strip.net.xml",
-        sim_file="../nets/ev_stations-Rory/2_station_strip/2_station_strip.sumocfg",
+        net_file="../nets/2_station_strip/2_station_strip.net.xml",
+        sim_file="../nets/2_station_strip/2_station_strip.sumocfg",
         out_csv_name="outputs/2_station_strip/test",
         use_gui=False,
         num_seconds=100,

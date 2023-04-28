@@ -42,8 +42,8 @@ if __name__ == "__main__":
         "berlin",
         lambda _: PettingZooEnv(
             env(
-                net_file=net_dir_path + "nets/ev_stations-Rory/berlin/berlin.net.xml",
-                sim_file=net_dir_path + "nets/ev_stations-Rory/berlin/berlin.sumocfg",
+                net_file=net_dir_path + "nets/berlin/berlin.net.xml",
+                sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
                 out_csv_name="../../outputs/berlin/dqn/dqn",
                 use_gui=True,
                 num_seconds=1000,  # ?episode length..
