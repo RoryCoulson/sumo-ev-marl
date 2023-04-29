@@ -26,6 +26,6 @@
 
 
     <flow id="1" from="E12" to="E12.632" begin="0" end="10000000" probability="0.1" departSpeed="max" departPos="base" departLane="best" type="soulEV65"  color=".5,.5,0"/>
-    <flow id="non_ev_1" from="E12" to="E12.632" begin="0" end="10000000" probability="0.1" departSpeed="max" departPos="base" departLane="best"  color="0,0,1"/>
+    <flow id="non_ev_1" from="E12" to="E12.632" begin="0" end="10000000" probability="0.05" departSpeed="max" departPos="base" departLane="best"  color="0,0,1"/>
 
 </routes>
