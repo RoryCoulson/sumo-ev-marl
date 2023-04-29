@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # update
-num_stations = 2
+num_stations = 4
 
 prs = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)

@@ -16,7 +16,7 @@ from ray.tune.registry import register_env
 from sumo_ev_rl.environment.env import env
 
 # Update with new run
-BEST_CHECKPOINT_PATH = "../../results/dqn/DQN_4x4_grid_aa607_00000_0_2023-04-18_18-08-41/checkpoint_000500"
+BEST_CHECKPOINT_PATH = "../../results/dqn/DQN_4x4_grid_7bb0c_00000_0_2023-04-29_02-59-33/checkpoint_000500"
 
 if __name__ == "__main__":
     ray.init()
@@ -29,10 +29,8 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
                 sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
                 output_file="../../outputs/4x4_grid/dqn/best/best_run",
-                use_gui=False,
+                use_gui=True,
                 num_seconds=5000,
-
-
             )
         ),
     )
@@ -44,10 +42,8 @@ if __name__ == "__main__":
         net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
         sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
         output_file=out_csv,
-        use_gui=False,
+        use_gui=True,
         num_seconds=5000,
-
-
     )
 
     algo = Algorithm.from_checkpoint(BEST_CHECKPOINT_PATH)

@@ -16,7 +16,7 @@ from ray.tune.registry import register_env
 from sumo_ev_rl.environment.env import env
 
 # Update with new run
-BEST_CHECKPOINT_PATH = "../../results/4_station_strip/ppo/ppo/PPO_4_station_strip_3251a_00000_0_2023-04-18_20-21-21/checkpoint_000625"
+BEST_CHECKPOINT_PATH = "../../results/4_station_strip/ppo/ppo/PPO_4_station_strip_e47bc_00000_0_2023-04-29_02-55-18/checkpoint_000125"
 
 if __name__ == "__main__":
     ray.init()
@@ -29,10 +29,8 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
                 sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
                 output_file="../../outputs/4_station_strip/ppo/best/best_run",
-                use_gui=False,
+                use_gui=True,
                 num_seconds=5000,
-
-
             )
         ),
     )
@@ -44,10 +42,8 @@ if __name__ == "__main__":
         net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
         sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
         output_file=out_csv,
-        use_gui=False,
+        use_gui=True,
         num_seconds=5000,
-
-
     )
 
     algo = Algorithm.from_checkpoint(BEST_CHECKPOINT_PATH)
