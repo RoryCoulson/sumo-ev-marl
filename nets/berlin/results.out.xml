@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-04-29 01:46:54 by Eclipse SUMO GUI Version 1.16.0
+<!-- generated on 2023-04-29 15:27:39 by Eclipse SUMO GUI Version 1.16.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
@@ -28,7 +28,7 @@
     </report>
 
     <traci_server>
-        <remote-port value="62854"/>
+        <remote-port value="51326"/>
     </traci_server>
 
     <random_number>
@@ -44,12 +44,5 @@
 -->
 
 <summary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/summary_file.xsd">
-    <step time="0.00" loaded="14" inserted="7" running="7" waiting="7" ended="0" arrived="0" collisions="0" teleports="0" halting="0" stopped="0" meanWaitingTime="0.00" meanTravelTime="-1.00" meanSpeed="11.92" meanSpeedRelative="0.98" duration="1682729216157"/>
-    <step time="1.00" loaded="16" inserted="14" running="14" waiting="0" ended="2" arrived="0" collisions="0" teleports="0" halting="0" stopped="0" meanWaitingTime="0.50" meanTravelTime="0.00" meanSpeed="10.52" meanSpeedRelative="0.86" duration="1682729216492"/>
-    <step time="2.00" loaded="16" inserted="14" running="14" waiting="0" ended="2" arrived="0" collisions="0" teleports="0" halting="0" stopped="0" meanWaitingTime="0.50" meanTravelTime="0.00" meanSpeed="10.10" meanSpeedRelative="0.82" duration="1682729217315"/>
-    <step time="3.00" loaded="16" inserted="14" running="14" waiting="0" ended="2" arrived="0" collisions="0" teleports="0" halting="0" stopped="0" meanWaitingTime="0.50" meanTravelTime="0.00" meanSpeed="10.63" meanSpeedRelative="0.88" duration="1682729217459"/>
-    <step time="4.00" loaded="16" inserted="14" running="14" waiting="0" ended="2" arrived="0" collisions="0" teleports="0" halting="0" stopped="0" meanWaitingTime="0.50" meanTravelTime="0.00" meanSpeed="10.66" meanSpeedRelative="0.88" duration="1682729217672"/>
-    <step time="5.00" loaded="16" inserted="14" running="14" waiting="0" ended="2" arrived="0" collisions="0" teleports="0" halting="0" stopped="0" meanWaitingTime="0.50" meanTravelTime="0.00" meanSpeed="10.72" meanSpeedRelative="0.89" duration="1682729217850"/>
-    <step time="6.00" loaded="16" inserted="14" running="14" waiting="0" ended="2" arrived="0" collisions="0" teleports="0" halting="0" stopped="0" meanWaitingTime="0.50" meanTravelTime="0.00" meanSpeed="10.72" meanSpeedRelative="0.89" duration="1682729217993"/>
-    <step time="7.00" loaded="16" inserted="14" running="14" waiting="0" ended="2" arrived="0" collisions="0" teleports="0" halting="0" stopped="0" meanWaitingTime="0.50" meanTravelTime="0.00" meanSpeed="10.51" meanSpeedRelative="0.87" duration="1682729218202"/>
+    <step time="0.00" loaded="14" inserted="7" running="7" waiting="7" ended="0" arrived="0" collisions="0" teleports="0" halting="0" stopped="0" meanWaitingTime="0.00" meanTravelTime="-1.00" meanSpeed="12.13" meanSpeedRelative="0.99" duration="1682778461154"/>
 </summary>

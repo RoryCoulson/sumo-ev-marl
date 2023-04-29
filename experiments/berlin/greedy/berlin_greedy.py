@@ -25,7 +25,7 @@ if __name__ == "__main__":
         net_file=net_dir_path + "nets/berlin/berlin.net.xml",
         sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
         output_file=out_csv,
-        use_gui=False,
+        use_gui=True,
         num_seconds=1000,
     )
 

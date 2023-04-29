@@ -16,7 +16,7 @@ from ray.rllib.env import PettingZooEnv
 from ray.tune.registry import register_env
 from sumo_ev_rl.environment.env import env
 
-BEST_CHECKPOINT_PATH = "../../results/berlin/ppo/ppo/PPO_berlin_3ad63_00000_0_2023-04-17_20-51-26/checkpoint_000125"
+BEST_CHECKPOINT_PATH = "../../results/berlin/ppo/ppo/PPO_berlin_de72d_00000_0_2023-04-29_03-02-18/checkpoint_000125"
 
 if __name__ == "__main__":
     ray.init()
@@ -29,7 +29,7 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/berlin/berlin.net.xml",
                 sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
                 output_file="../../outputs/berlin/ppo/best/best_run",
-                use_gui=False,
+                use_gui=True,
                 num_seconds=5000,
             )
         ),
@@ -42,10 +42,8 @@ if __name__ == "__main__":
         net_file=net_dir_path + "nets/berlin/berlin.net.xml",
         sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
         output_file=out_csv,
-        use_gui=False,
+        use_gui=True,
         num_seconds=5000,
-
-
     )
 
     algo = Algorithm.from_checkpoint(BEST_CHECKPOINT_PATH)
