@@ -1,0 +1,64 @@
+Failure # 1 (occurred at 2023-04-29_01-42-01)
+Traceback (most recent call last):
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/tune/execution/ray_trial_executor.py", line 1276, in get_next_executor_event
+    future_result = ray.get(ready_future)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/_private/client_mode_hook.py", line 105, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/_private/worker.py", line 2382, in get
+    raise value
+  File "python/ray/_raylet.pyx", line 1166, in ray._raylet.task_execution_handler
+  File "python/ray/_raylet.pyx", line 1072, in ray._raylet.execute_task_with_cancellation_handler
+  File "python/ray/_raylet.pyx", line 805, in ray._raylet.execute_task
+  File "python/ray/_raylet.pyx", line 972, in ray._raylet.execute_task
+  File "python/ray/_raylet.pyx", line 621, in ray._raylet.store_task_errors
+ray.exceptions.RayActorError: The actor died because of an error raised in its creation task, [36mray::DQN.__init__()[39m (pid=32676, ip=127.0.0.1, repr=DQN)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/worker_set.py", line 240, in _setup
+    self.add_workers(
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/worker_set.py", line 614, in add_workers
+    raise result.get()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/utils/actor_manager.py", line 477, in __fetch_result
+    result = ray.get(r)
+ray.exceptions.RayActorError: The actor died because of an error raised in its creation task, [36mray::RolloutWorker.__init__()[39m (pid=32686, ip=127.0.0.1, repr=<ray.rllib.evaluation.rollout_worker.RolloutWorker object at 0x7fef7399ff70>)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/rollout_worker.py", line 607, in __init__
+    self.env = env_creator(copy.deepcopy(self.env_context))
+  File "/Users/rorycoulson/Documents/Year3/S2/COMP3200_IndividualProject/sumo-ev-marl/experiments/4x4_grid/dqn/4x4_grid_dqn.py", line 28, in <lambda>
+    lambda _: PettingZooEnv(
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/env/wrappers/pettingzoo_env.py", line 82, in __init__
+    env.reset()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/pettingzoo/utils/wrappers/order_enforcing.py", line 95, in reset
+    super().reset(seed=seed, options=options)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/pettingzoo/utils/wrappers/base.py", line 91, in reset
+    self.env.reset(seed=seed, options=options)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/pettingzoo/utils/wrappers/base.py", line 91, in reset
+    self.env.reset(seed=seed, options=options)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/sumo_ev_rl/environment/env.py", line 490, in reset
+    self.env.reset(seed=seed, options=options)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/sumo_ev_rl/environment/env.py", line 193, in reset
+    self._start_simulation()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/sumo_ev_rl/environment/env.py", line 176, in _start_simulation
+    traci.start(sumo_cmd, label=self.label)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/traci/main.py", line 150, in start
+    result = init(sumoPort, numRetries, "localhost", label,
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/traci/main.py", line 122, in init
+    return con.getVersion()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/traci/connection.py", line 387, in getVersion
+    result = self._sendCmd(command, None, None)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/traci/connection.py", line 230, in _sendCmd
+    return self._sendExact()
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/traci/connection.py", line 136, in _sendExact
+    raise FatalTraCIError("connection closed by SUMO")
+traci.exceptions.FatalTraCIError: connection closed by SUMO
+
+During handling of the above exception, another exception occurred:
+
+[36mray::DQN.__init__()[39m (pid=32676, ip=127.0.0.1, repr=DQN)
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 445, in __init__
+    super().__init__(
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/tune/trainable/trainable.py", line 169, in __init__
+    self.setup(copy.deepcopy(self.config))
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/algorithms/algorithm.py", line 571, in setup
+    self.workers = WorkerSet(
+  File "/Users/rorycoulson/opt/anaconda3/lib/python3.9/site-packages/ray/rllib/evaluation/worker_set.py", line 192, in __init__
+    raise e.args[0].args[2]
+traci.exceptions.FatalTraCIError: connection closed by SUMO
+

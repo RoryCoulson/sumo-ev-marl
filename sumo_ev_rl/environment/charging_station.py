@@ -12,8 +12,7 @@ if "SUMO_HOME" in os.environ:
 else:
     raise ImportError("'SUMO_HOME' environment variable")
 
-
-MAX_CLOSEST_DISTANCE = 300  # 500 # tweak depending on simulation
+MAX_CLOSEST_DISTANCE = 300
 MAX_RANGE = 150000
 CHARGING_DURATION = 80
 
@@ -232,7 +231,7 @@ class ChargingStation:
         last_curr_edge_id = self.sumo.vehicle.getRoadID(self.consider_vehicle)
 
         logging.debug(
-            f"Closest station ids (not specifically in range): {self.closest_station_ids}")
+            f"Closest station ids to cs:{self.id} (not specifically in range): {self.closest_station_ids}")
         # If no close stations display equivalent as all full in observation
         if not self.closest_station_ids:
             return list(np.ones(CLOSEST_STATIONS_NUM))
@@ -253,7 +252,7 @@ class ChargingStation:
 
         self.closest_station_ids_in_range = closest_station_ids_in_range
         logging.debug(
-            f"Closest station ids (in range of vehicle: {self.consider_vehicle}): {self.closest_station_ids_in_range}")
+            f"Closest station ids to cs:{self.id} (in range of vehicle: {self.consider_vehicle}): {self.closest_station_ids_in_range}")
 
         logging.debug(
             f"Closest stations: {self.closest_stations_to_considered_vehicle}")
