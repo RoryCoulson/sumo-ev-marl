@@ -12,7 +12,6 @@ from .charging_station import ChargingStation
 from pettingzoo import AECEnv
 from gymnasium.utils.ezpickle import EzPickle
 from gymnasium.utils import seeding
-from pyvirtualdisplay.smartdisplay import SmartDisplay
 from pettingzoo.utils.conversions import parallel_wrapper_fn
 from pettingzoo.utils import agent_selector, wrappers
 import logging
@@ -426,75 +425,40 @@ class SumoEVEnvironment(gym.Env):
 
     def close(self):
         """Close the environment and stop the SUMO simulation."""
-        if self.conn is None:
+        if not self.conn:
             return
 
         if not LIBSUMO:
             traci.switch(self.label)
         traci.close()
 
-        if self.display is not None:
+        if self.display:
             self.display.stop()
             self.display = None
 
         self.conn = None
 
     def __del__(self):
-        """Close the environment and stop the SUMO simulation."""
         self.close()
 
     def render(self):
-        """Render the environment.
-
-        If render_mode is "human", the environment will be rendered in a GUI window using pyvirtualdisplay.
-        """
+        # sumo-gui will already be rendering the frame
         if self.render_mode == "human":
-            return  # sumo-gui will already be rendering the frame
-        elif self.render_mode == "rgb_array":
-            # img = self.sumo.gui.screenshot(traci.gui.DEFAULT_VIEW,
-            #                          f"temp/img{self.sim_step}.jpg",
-            #                          width=self.virtual_display[0],
-            #                          height=self.virtual_display[1])
-            img = self.display.grab()
-            return np.array(img)
+            return
 
+    # Save metrics to output csv files for plotting performance
     def save_csv(self, output_file, episode):
-        """Save metrics of the simulation to a .csv file.
-
-        Args:
-            output_file (str): Path to the output .csv file. E.g.: "results/my_results
-            episode (int): Episode number to be appended to the output file name.
-        """
         if output_file is not None:
-            df = pd.DataFrame(self.metrics)
             Path(Path(output_file).parent).mkdir(parents=True, exist_ok=True)
-            df.to_csv(output_file +
-                      f"_conn{self.label}_ep{episode}" + ".csv", index=False)
+            pd.DataFrame(self.metrics).to_csv(output_file +
+                                              f"_episode{episode}" + ".csv", index=False)
 
-            df = pd.DataFrame(self.total_metrics)
-            Path(Path(output_file).parent).mkdir(parents=True, exist_ok=True)
-            df.to_csv(output_file +
-                      f"_total_metrics_{self.label}" + ".csv", index=False)
-
-    def encode(self, state, cs_id):
-        """Encode the state of the charging station into a hashable object."""
-
-        battery = state
-        # ? already a hashable object
-        return tuple(battery)
-
-    def _discretize_density(self, density):
-        return min(int(density * 10), 9)
+            pd.DataFrame(self.total_metrics).to_csv(output_file +
+                                                    f"_total_metrics_{self.label}" + ".csv", index=False)
 
 
+# PettingZooo AECEnv interface iplementation wrapper for SUMO
 class SumoEVEnvironmentPZ(AECEnv, EzPickle):
-    """A wrapper for the SUMO environment that implements the AECEnv interface from PettingZoo.
-
-    For more information, see https://pettingzoo.farama.org/api/aec/.
-
-    The arguments are the same as for :py:class:`sumo_ev_rl.environment.env.SumoEVEnvironment`.
-    """
-
     metadata = {"render.modes": ["human"],
                 "name": "sumo_ev_marl_v0", "is_parallelizable": True}
 
@@ -502,7 +466,6 @@ class SumoEVEnvironmentPZ(AECEnv, EzPickle):
         """Initialize the environment."""
         EzPickle.__init__(self, **kwargs)
         self._kwargs = kwargs
-
         self.seed()
         self.env = SumoEVEnvironment(**self._kwargs)
 
@@ -510,24 +473,20 @@ class SumoEVEnvironmentPZ(AECEnv, EzPickle):
         self.possible_agents = self.env.cs_ids
         self._agent_selector = agent_selector(self.agents)
         self.agent_selection = self._agent_selector.reset()
-        # spaces
         self.action_spaces = {
-            a: self.env.action_spaces(a) for a in self.agents}
+            cs: self.env.action_spaces(cs) for cs in self.agents}
         self.observation_spaces = {
-            a: self.env.observation_spaces(a) for a in self.agents}
+            cs: self.env.observation_spaces(cs) for cs in self.agents}
 
-        # dicts
-        self.rewards = {a: 0 for a in self.agents}
-        self.terminations = {a: False for a in self.agents}
-        self.truncations = {a: False for a in self.agents}
-        self.infos = {a: {} for a in self.agents}
+        self.rewards = {cs: 0 for cs in self.agents}
+        self.terminations = {cs: False for cs in self.agents}
+        self.truncations = {cs: False for cs in self.agents}
+        self.infos = {cs: {} for cs in self.agents}
 
     def seed(self, seed=None):
-        """Set the seed for the environment."""
         self.randomizer, seed = seeding.np_random(seed)
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
-        """Reset the environment."""
         self.env.reset(seed=seed, options=options)
         self.agents = self.possible_agents[:]
         self.agent_selection = self._agent_selector.reset()
@@ -539,42 +498,31 @@ class SumoEVEnvironmentPZ(AECEnv, EzPickle):
         self.infos = {agent: {} for agent in self.agents}
 
     def observation_space(self, agent):
-        """Return the observation space for the agent."""
         return self.observation_spaces[agent]
 
     def action_space(self, agent):
-        """Return the action space for the agent."""
         return self.action_spaces[agent]
 
     def observe(self, agent):
-        """Return the observation for the agent."""
         obs = self.env.observations[agent].copy()
         return obs
 
     def close(self):
-        """Close the environment and stop the SUMO simulation."""
         self.env.close()
 
     def render(self, mode="human"):
-        """Render the environment."""
         return self.env.render(mode)
 
     def save_csv(self, output_file, episode):
-        """Save metrics of the simulation to a .csv file."""
         self.env.save_csv(output_file, episode)
 
     def step(self, action):
-        """Step the environment."""
-
         if self.truncations[self.agent_selection] or self.terminations[self.agent_selection]:
             return self._was_dead_step(action)
         agent = self.agent_selection
         if not self.action_spaces[agent].contains(action):
             raise Exception(
-                "Action for agent {} must be in Discrete({})."
-                "It is currently {}".format(
-                    agent, self.action_spaces[agent].n, action)
-            )
+                f"Action for agent {agent} must be in Discrete({self.action_spaces[agent].n}), current action: {action}")
 
         self.env._apply_actions({agent: action})
 
@@ -591,6 +539,5 @@ class SumoEVEnvironmentPZ(AECEnv, EzPickle):
         self.truncations = {a: done for a in self.agents}
 
         self.agent_selection = self._agent_selector.next()
-        # ? why set to zero and then accumulate?
         self._cumulative_rewards[agent] = 0
         self._accumulate_rewards()

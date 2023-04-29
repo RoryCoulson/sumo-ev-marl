@@ -1,0 +1,66 @@
+import os
+import sys
+from datetime import datetime
+from sumo_ev_rl.environment.env import SumoEVEnvironment
+from ray.rllib.algorithms.algorithm import Algorithm
+import ray
+
+if "SUMO_HOME" in os.environ:
+    tools = os.path.join(os.environ["SUMO_HOME"], "tools")
+    sys.path.append(tools)
+else:
+    sys.exit("Please declare the environment variable 'SUMO_HOME'")
+
+from ray.rllib.env import PettingZooEnv
+from ray.tune.registry import register_env
+from sumo_ev_rl.environment.env import env
+
+BEST_CHECKPOINT_PATH = "../../results/4x4_grid/ppo/ppo/PPO_4x4_grid_12324_00000_0_2023-04-18_17-07-10/checkpoint_000125"
+
+if __name__ == "__main__":
+    ray.init()
+    RESOLUTION = (3200, 1800)
+    net_dir_path = "../../../"
+    register_env(
+        "4x4_grid",
+        lambda _: PettingZooEnv(
+            env(
+                net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
+                sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
+                output_file="../../outputs/4x4_grid/ppo/best/best_run",
+                use_gui=True,
+                num_seconds=5000,
+                render_mode="human",
+                virtual_display=RESOLUTION
+            )
+        ),
+    )
+
+    experiment_time = str(datetime.now()).split(".")[0]
+    out_csv = f"../../outputs/4x4_grid/ppo/ppo_best_checkpoint/{experiment_time}"
+    RESOLUTION = (3200, 1800)
+
+    env = SumoEVEnvironment(
+        net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
+        sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
+        output_file=out_csv,
+        use_gui=True,
+        num_seconds=5000,
+        render_mode="human",
+        virtual_display=RESOLUTION
+    )
+
+    algo = Algorithm.from_checkpoint(BEST_CHECKPOINT_PATH)
+    for run in range(1, 2):
+        initial_states = env.reset()
+        done = {"__all__": False}
+        infos = []
+        obs = env.reset()
+
+        while not done["__all__"]:
+            actions = {cs: algo.compute_single_action(obs[cs], policy_id='0')
+                       for cs in env.cs_ids}
+            obs, r, done, _ = env.step(actions=actions)
+
+        env.save_csv(out_csv, run)
+        env.close()

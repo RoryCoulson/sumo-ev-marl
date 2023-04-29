@@ -1,3 +1,3 @@
 step,system_total_waiting_time,system_mean_waiting_time,cumulative_total_wait_time,cumulative_mean_wait_time,1_accumulated_waiting_time,1_reward,1_cumulative_rewards,1_cumulative_diff_rewards,2_accumulated_waiting_time,2_reward,2_cumulative_rewards,2_cumulative_diff_rewards,agents_total_accumulated_waiting_time,cumulative_penalties,cumulative_rewards,mean_reward,mean_cumulative_reward
-1.0,0,0.0,3.0,,0.0,0,-8.676762267524913,0.0,0.0,0,4.338213643514663,0.0,0.0,13.563268038581462,-4.338548624010249,0.0,-2.169274312005125
-2.0,0,0.0,3.0,,0.0,0,-8.676762267524913,0.0,0.0,0,4.338213643514663,0.0,0.0,13.563268038581462,-4.338548624010249,0.0,-2.169274312005125
+1.0,0,0.0,21.0,,0.0,0,2.548204984731508,0.0,0.0,0,0.28446380061530974,0.0,0.0,10.365414482205246,2.8326687853468178,0.0,1.4163343926734089
+2.0,0,0.0,21.0,,0.0,0,2.548204984731508,0.0,0.0,0,0.28446380061530974,0.0,0.0,10.365414482205246,2.8326687853468178,0.0,1.4163343926734089

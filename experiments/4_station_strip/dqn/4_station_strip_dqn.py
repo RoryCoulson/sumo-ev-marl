@@ -1,10 +1,8 @@
 import os
 import sys
 
-from sumo_ev_rl.environment.env import SumoEVEnvironment
 from sumo_ev_rl.environment.env import env
 from sumo_ev_rl.environment.charging_station import CLOSEST_STATIONS_NUM
-
 
 if "SUMO_HOME" in os.environ:
     tools = os.path.join(os.environ["SUMO_HOME"], "tools")
@@ -12,29 +10,16 @@ if "SUMO_HOME" in os.environ:
 else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 import numpy as np
-import pandas as pd
 import ray
-import traci
-# from gym import spaces
 from gymnasium import spaces
-# from ray.rllib.agents.a3c.a3c import A3CTrainer
-# from ray.rllib.algorithms.ppo import PPOTF1Policy
 from ray.rllib.algorithms.dqn import DQNTFPolicy
-
-
 from ray import air
 from ray import tune
-
-# from ray.rllib.agents.a3c.a3c_tf_policy import A3CTFPolicy
 from ray.rllib.algorithms.dqn import DQNConfig
-
 from ray.rllib.env import PettingZooEnv
 from ray.tune.registry import register_env
 
-# import sumo_rl
-
 if __name__ == "__main__":
-    # ray.init(ignore_reinit_error=True, num_cpus=4)  # num_gpus=1
     ray.init()
     RESOLUTION = (3200, 1800)
     net_dir_path = "../../../"
@@ -46,7 +31,7 @@ if __name__ == "__main__":
                 sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
                 output_file="../../outputs/4_station_strip/dqn/dqn",
                 use_gui=True,
-                num_seconds=5000,  # ?episode length..
+                num_seconds=5000,
                 render_mode="human",
                 virtual_display=RESOLUTION
             )
@@ -54,11 +39,10 @@ if __name__ == "__main__":
     )
 
     config = DQNConfig()
-
     config.exploration_config = {
         "type": "EpsilonGreedy",
         "initial_epsilon": 1.0,
-        "final_epsilon": 0.01,  # ? try lower?
+        "final_epsilon": 0.01,
         "epsilon_timesteps": 5000,
     }
 
@@ -69,16 +53,13 @@ if __name__ == "__main__":
         policy_mapping_fn=lambda agent_id, episode, worker, **kwargs: "0",
     )
 
-    # ????
     config.rollouts(num_rollout_workers=1, rollout_fragment_length=50)
-
     config.training(lr=0.001)
-    # config.no_done_at_end = True #? deprecated..
 
     tuner = tune.Tuner(
         "DQN",
         run_config=air.RunConfig(
-            stop={"timesteps_total": 2000000},  # ??? this is the total
+            stop={"timesteps_total": 500000},
             verbose=1,
             checkpoint_config=air.CheckpointConfig(
                 checkpoint_frequency=5,

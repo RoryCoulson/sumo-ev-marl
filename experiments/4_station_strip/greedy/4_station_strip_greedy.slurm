@@ -4,7 +4,7 @@
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=4
 
-#SBATCH --time=05:00:00  
+#SBATCH --time=06:00:00  
 #SBATCH --output=4_station_strip.out
 #SBATCH --error=4_station_strip.err
 
