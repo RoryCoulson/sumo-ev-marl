@@ -1,7 +1,4 @@
-"""SUMO Environment for Charging Station Control."""
-
 from gymnasium.envs.registration import register
-
 
 register(
     id="sumo-ev-rl-v0",
