@@ -29,9 +29,7 @@ if __name__ == "__main__":
                 sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
                 output_file="../../outputs/berlin/dqn/dqn",
                 use_gui=False,
-                num_seconds=5000,
-
-
+                num_seconds=1000,
             )
         ),
     )
@@ -41,7 +39,7 @@ if __name__ == "__main__":
         "type": "EpsilonGreedy",
         "initial_epsilon": 1.0,
         "final_epsilon": 0.01,
-        "epsilon_timesteps": 5000,
+        "epsilon_timesteps": 1000,
     }
 
     config.environment("berlin")
@@ -57,7 +55,7 @@ if __name__ == "__main__":
     tuner = tune.Tuner(
         "DQN",
         run_config=air.RunConfig(
-            stop={"timesteps_total": 500000},
+            stop={"timesteps_total": 2500000},
             verbose=1,
             checkpoint_config=air.CheckpointConfig(
                 checkpoint_frequency=5,

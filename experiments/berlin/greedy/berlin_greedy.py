@@ -26,9 +26,7 @@ if __name__ == "__main__":
         sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
         output_file=out_csv,
         use_gui=False,
-        num_seconds=5000,
-
-
+        num_seconds=1000,
     )
 
     for run in range(1, 51):

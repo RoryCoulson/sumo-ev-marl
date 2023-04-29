@@ -30,9 +30,7 @@ if __name__ == "__main__":
                 sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
                 output_file="../../outputs/berlin/ppo/ppo",
                 use_gui=False,
-                num_seconds=5000,
-
-
+                num_seconds=1000,
             )
         ),
     )
@@ -57,7 +55,7 @@ if __name__ == "__main__":
     tuner = tune.Tuner(
         "PPO",
         run_config=air.RunConfig(
-            stop={"timesteps_total": 500000},
+            stop={"timesteps_total": 2500000},
             verbose=1,
             checkpoint_config=air.CheckpointConfig(
                 checkpoint_frequency=5,

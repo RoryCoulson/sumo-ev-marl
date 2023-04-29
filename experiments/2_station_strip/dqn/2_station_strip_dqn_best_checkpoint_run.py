@@ -15,7 +15,7 @@ from ray.rllib.env import PettingZooEnv
 from ray.tune.registry import register_env
 from sumo_ev_rl.environment.env import env
 
-BEST_CHECKPOINT_PATH = "../../results/dqn/DQN_2_station_strip_a6ec9_00000_0_2023-04-19_18-14-34/checkpoint_000500"
+BEST_CHECKPOINT_PATH = "../../results/dqn/DQN_2_station_strip_aadfa_00000_0_2023-04-29_02-46-34/checkpoint_000500"
 
 if __name__ == "__main__":
     ray.init()
@@ -28,10 +28,8 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/2_station_strip/2_station_strip.net.xml",
                 sim_file=net_dir_path + "nets/2_station_strip/2_station_strip.sumocfg",
                 output_file="outputs/2_station_strip/dqn/best/best_run",
-                use_gui=False,
+                use_gui=True,
                 num_seconds=5000,
-
-
             )
         ),
     )
@@ -43,7 +41,7 @@ if __name__ == "__main__":
         net_file=net_dir_path + "nets/2_station_strip/2_station_strip.net.xml",
         sim_file=net_dir_path + "nets/2_station_strip/2_station_strip.sumocfg",
         output_file=out_csv,
-        use_gui=False,
+        use_gui=True,
         num_seconds=5000,
 
     )

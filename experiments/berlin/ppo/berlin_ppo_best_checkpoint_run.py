@@ -31,8 +31,6 @@ if __name__ == "__main__":
                 output_file="../../outputs/berlin/ppo/best/best_run",
                 use_gui=False,
                 num_seconds=5000,
-
-
             )
         ),
     )

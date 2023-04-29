@@ -33,8 +33,6 @@ if __name__ == "__main__":
                 output_file="../../outputs/2_station_strip/ppo/ppo",
                 use_gui=False,
                 num_seconds=5000,
-
-
             )
         ),
     )
