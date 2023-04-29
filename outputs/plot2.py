@@ -4,14 +4,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# update
-num_stations = 10
+# Run with: python plot2.py -f data/
 
+num_stations = 10  # adjust depending on network
 prs = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 prs.add_argument("-f", nargs="+", required=True, help="Files\n")
 args = prs.parse_args()
-
 mean_total_times = {}
 station_stats = {}
 
@@ -38,7 +37,7 @@ colors = ['red', 'blue', 'green', 'yellow']
 df_mean_total_wait = pd.DataFrame(mean_total_times, index=[''])
 df_mean_total_wait.plot.bar(rot=0, title="Mean wait time", color=colors)
 
-print('station_stats:', station_stats)
+print('Station stats:', station_stats)
 df_station_stats = pd.DataFrame(station_stats)
 df_station_stats.plot.bar(
     rot=0, title="Mean wait time per station", color=colors)

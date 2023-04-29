@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2023-04-29 15:27:39 by Eclipse SUMO GUI Version 1.16.0
+<!-- generated on 2023-04-29 16:27:55 by Eclipse SUMO GUI Version 1.16.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
@@ -28,7 +28,7 @@
     </report>
 
     <traci_server>
-        <remote-port value="51326"/>
+        <remote-port value="53508"/>
     </traci_server>
 
     <random_number>
@@ -44,13 +44,4 @@
 -->
 
 <battery-export xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/battery_file.xsd">
-    <timestep time="0.00">
-        <vehicle id="1.0" energyConsumed="0.00" totalEnergyConsumed="0.00" totalEnergyRegenerated="0.00" actualBatteryCapacity="-1.00" maximumBatteryCapacity="2000.00" chargingStationId="NULL" energyCharged="0.00" energyChargedInTransit="0.00" energyChargedStopped="0.00" speed="7.33" acceleration="0.00" x="323.02" y="1403.23" lane="1124627670#0_0" posOnLane="5.10" timeStopped="0"/>
-        <vehicle id="2.0" energyConsumed="0.00" totalEnergyConsumed="0.00" totalEnergyRegenerated="0.00" actualBatteryCapacity="-1.00" maximumBatteryCapacity="2000.00" chargingStationId="NULL" energyCharged="0.00" energyChargedInTransit="0.00" energyChargedStopped="0.00" speed="11.80" acceleration="0.00" x="970.18" y="2073.27" lane="85255869#0_0" posOnLane="3.45" timeStopped="0"/>
-        <vehicle id="3.0" energyConsumed="0.00" totalEnergyConsumed="0.00" totalEnergyRegenerated="0.00" actualBatteryCapacity="-1.00" maximumBatteryCapacity="2000.00" chargingStationId="NULL" energyCharged="0.00" energyChargedInTransit="0.00" energyChargedStopped="0.00" speed="10.35" acceleration="0.00" x="1026.07" y="1055.71" lane="-1147413257_0" posOnLane="5.10" timeStopped="0"/>
-        <vehicle id="4.0" energyConsumed="0.00" totalEnergyConsumed="0.00" totalEnergyRegenerated="0.00" actualBatteryCapacity="-1.00" maximumBatteryCapacity="2000.00" chargingStationId="NULL" energyCharged="0.00" energyChargedInTransit="0.00" energyChargedStopped="0.00" speed="14.41" acceleration="0.00" x="644.95" y="2121.82" lane="1110759395_1" posOnLane="5.10" timeStopped="0"/>
-        <vehicle id="5.0" energyConsumed="0.00" totalEnergyConsumed="0.00" totalEnergyRegenerated="0.00" actualBatteryCapacity="-1.00" maximumBatteryCapacity="2000.00" chargingStationId="NULL" energyCharged="0.00" energyChargedInTransit="0.00" energyChargedStopped="0.00" speed="15.42" acceleration="0.00" x="164.35" y="2006.88" lane="166260140_1" posOnLane="5.10" timeStopped="0"/>
-        <vehicle id="6.0" energyConsumed="0.00" totalEnergyConsumed="0.00" totalEnergyRegenerated="0.00" actualBatteryCapacity="-1.00" maximumBatteryCapacity="2000.00" chargingStationId="NULL" energyCharged="0.00" energyChargedInTransit="0.00" energyChargedStopped="0.00" speed="16.65" acceleration="0.00" x="461.32" y="891.10" lane="-1147767991#2_0" posOnLane="5.10" timeStopped="0"/>
-        <vehicle id="7.0" energyConsumed="0.00" totalEnergyConsumed="0.00" totalEnergyRegenerated="0.00" actualBatteryCapacity="-1.00" maximumBatteryCapacity="2000.00" chargingStationId="NULL" energyCharged="0.00" energyChargedInTransit="0.00" energyChargedStopped="0.00" speed="8.97" acceleration="0.00" x="937.10" y="2076.79" lane="-1079386620#0_0" posOnLane="5.10" timeStopped="0"/>
-    </timestep>
 </battery-export>
