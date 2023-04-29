@@ -1,56 +1,46 @@
+import argparse
+import glob
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-num_stations = 4
+# update
+num_stations = 2
 
-greedy_df = pd.read_csv('data/Greedy.csv')
-dqn_df = pd.read_csv('data/DQN.csv')
-ppo_df = pd.read_csv('data/PPO.csv')
-greedy_df_final_episode = greedy_df.loc[greedy_df['step'] >= 124000]
-dqn_df_final_episode = dqn_df.loc[dqn_df['step'] >= 124000]
-ppo_df_final_episode = ppo_df.loc[ppo_df['step'] >= 124000]
+prs = argparse.ArgumentParser(
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+prs.add_argument("-f", nargs="+", required=True, help="Files\n")
+args = prs.parse_args()
 
-# mean total wait time
-mean_greedy_total_wait_time = np.mean(
-    greedy_df_final_episode['system_total_waiting_time'])
-mean_dqn_total_wait_time = np.mean(
-    dqn_df_final_episode['system_total_waiting_time'])
-mean_ppo_total_wait_time = np.mean(
-    ppo_df_final_episode['system_total_waiting_time'])
+mean_total_times = {}
+station_stats = {}
 
-print(
-    f"mean_greedy_total_wait_time: {mean_greedy_total_wait_time}, mean_dqn_total_wait_time: {mean_dqn_total_wait_time}, mean_ppo_total_wait_time: {mean_ppo_total_wait_time}")
+for file in args.f:
+    for f in sorted(glob.glob(file + "*"), reverse=True):
+        name = f.split('/')[1].split('.')[0]
+        df = pd.read_csv(f, sep=",")
+        df_last_ep = df.tail(5000)  # for experiments with ep len 5,000
 
-station_stats = {'greedy': [], 'ppo': [], 'dqn': []}
-station_stats_labels = []
-for cs_index in range(1, num_stations+1):
-    station_stats_labels.append(f'Station {cs_index}')
+        mean_total_wait_time = np.mean(df_last_ep['system_total_waiting_time'])
+        print(f"Mean total wait time ({name}): {mean_total_wait_time}")
+        mean_total_times[name] = mean_total_wait_time
 
-    station_stats['greedy'].append(
-        np.sum(greedy_df_final_episode[f'{cs_index}_accumulated_waiting_time']))
-    station_stats['dqn'].append(
-        np.sum(dqn_df_final_episode[f'{cs_index}_accumulated_waiting_time']))
-    station_stats['ppo'].append(
-        np.sum(ppo_df_final_episode[f'{cs_index}_accumulated_waiting_time']))
+        station_wait_times = []
+        for cs_index in range(1, num_stations+1):
+            cs_wait_time = np.sum(
+                df_last_ep[f'{cs_index}_accumulated_waiting_time'])
+            station_wait_times.append(cs_wait_time)
 
+        station_stats[name] = station_wait_times
 
-greedy = [mean_greedy_total_wait_time]
-mappo = [mean_ppo_total_wait_time]
-madqn = [mean_dqn_total_wait_time]
+colors = ['red', 'blue', 'green', 'yellow']
 
-index = ['']
-df = pd.DataFrame({'greedy': greedy, 'mappo': mappo,
-                   'madqn': madqn}, index=index)
+df_mean_total_wait = pd.DataFrame(mean_total_times, index=[''])
+df_mean_total_wait.plot.bar(rot=0, title="Mean wait time", color=colors)
 
+print('station_stats:', station_stats)
+df_station_stats = pd.DataFrame(station_stats)
+df_station_stats.plot.bar(
+    rot=0, title="Mean wait time per station", color=colors)
 
-df.plot.bar(rot=0, title="Mean wait time")
-
-
-index = station_stats_labels
-df2 = pd.DataFrame({'Greedy': station_stats['greedy'], 'PPO': station_stats['ppo'],
-                   'DQN': station_stats['dqn']}, index=index)
-
-
-df2.plot.bar(rot=0, title="Total wait time per station")
 plt.show(block=True)

@@ -32,8 +32,6 @@ if __name__ == "__main__":
                 output_file="../../outputs/4_station_strip/dqn/dqn",
                 use_gui=False,
                 num_seconds=5000,
-
-
             )
         ),
     )
