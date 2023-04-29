@@ -257,8 +257,6 @@ class SumoEVEnvironment(gym.Env):
         rewards = self._compute_rewards()
         dones = self._compute_dones()
         # Episode ends when reached max seconds
-        terminated = False
-        truncated = dones["__all__"]
         info = self._compute_info()
 
         return observations, rewards, dones, info
@@ -289,8 +287,8 @@ class SumoEVEnvironment(gym.Env):
             self.charging_stations[cs].not_charged_reward += - self.charging_stations[cs].get_combined_charge_reward(
                 battery)
 
-            print('----------NOT CHARGED REWARD:',
-                  self.charging_stations[cs].not_charged_reward)
+            logging.debug(
+                f"Not charged reward: {self.charging_stations[cs].not_charged_reward}")
 
         # Map 1 to the close_vehicle from observation (if exists)
         elif close_vehicle:
@@ -334,28 +332,10 @@ class SumoEVEnvironment(gym.Env):
 
         return {cs: self.rewards[cs] for cs in self.rewards.keys()}
 
-    @property
-    def observation_space(self):
-        """Return the observation space of a charging station.
-
-        Only used in case of single-agent environment.
-        """
-        return self.charging_stations[self.cs_ids[0]].observation_space
-
-    @property
-    def action_space(self):
-        """Return the action space of a charging station.
-
-        Only used in case of single-agent environment.
-        """
-        return self.charging_stations[self.cs_ids[0]].action_space
-
     def observation_spaces(self, cs_id: str):
-        """Return the observation space of a charging station."""
         return self.charging_stations[cs_id].observation_space
 
     def action_spaces(self, cs_id: str) -> gym.spaces.Discrete:
-        """Return the action space of a charging station."""
         return self.charging_stations[cs_id].action_space
 
     def _sumo_step(self):
@@ -363,8 +343,6 @@ class SumoEVEnvironment(gym.Env):
 
     def _get_system_info(self):
         vehicles = self.get_evs()
-        # speeds = [self.sumo.vehicle.getSpeed(vehicle) for vehicle in vehicles]
-
         waiting_times = [self.conn.vehicle.getWaitingTime(
             vehicle) for vehicle in vehicles]
 
@@ -372,15 +350,10 @@ class SumoEVEnvironment(gym.Env):
         self.cumulative_mean_wait_time += np.mean(waiting_times)  # ???
 
         return {
-            # In SUMO, a vehicle is considered halting if its speed is below 0.1 m/s
-            # "system_total_stopped": sum(int(speed < 0.1) for speed in speeds),
             "system_total_waiting_time": sum(waiting_times),
             "system_mean_waiting_time": 0.0 if len(vehicles) == 0 else np.mean(waiting_times),
-            # "system_mean_speed": 0.0 if len(vehicles) == 0 else np.mean(speeds),
             "cumulative_total_wait_time": self.cumulative_total_wait_time,
             "cumulative_mean_wait_time": self.cumulative_mean_wait_time,
-
-
         }
 
     def _get_per_agent_info(self):
@@ -389,13 +362,13 @@ class SumoEVEnvironment(gym.Env):
         ]
 
         info = {}
-        print('REWARDS:', self.rewards)
+        logging.debug('Rewards:', self.rewards)
 
+        # Get info metrics
         for i, cs in enumerate(self.cs_ids):
             info[f"{cs}_accumulated_waiting_time"] = accumulated_waiting_time[i]
             info[f"{cs}_reward"] = self.rewards[cs]
 
-            # if self.charging_stations[cs].consider_vehicle:
             self.cumulative_rewards[i] += self.rewards[cs]
             if self.rewards[cs] < 0:
                 self.cumulative_penalties -= self.rewards[cs]
@@ -424,7 +397,6 @@ class SumoEVEnvironment(gym.Env):
         return info
 
     def close(self):
-        """Close the environment and stop the SUMO simulation."""
         if not self.conn:
             return
 
@@ -442,7 +414,7 @@ class SumoEVEnvironment(gym.Env):
         self.close()
 
     def render(self):
-        # sumo-gui will already be rendering the frame
+        # sumo-gui will already render
         if self.render_mode == "human":
             return
 
@@ -452,7 +424,6 @@ class SumoEVEnvironment(gym.Env):
             Path(Path(output_file).parent).mkdir(parents=True, exist_ok=True)
             pd.DataFrame(self.metrics).to_csv(output_file +
                                               f"_episode{episode}" + ".csv", index=False)
-
             pd.DataFrame(self.total_metrics).to_csv(output_file +
                                                     f"_total_metrics_{self.label}" + ".csv", index=False)
 
@@ -463,7 +434,6 @@ class SumoEVEnvironmentPZ(AECEnv, EzPickle):
                 "name": "sumo_ev_marl_v0", "is_parallelizable": True}
 
     def __init__(self, **kwargs):
-        """Initialize the environment."""
         EzPickle.__init__(self, **kwargs)
         self._kwargs = kwargs
         self.seed()
@@ -521,8 +491,7 @@ class SumoEVEnvironmentPZ(AECEnv, EzPickle):
             return self._was_dead_step(action)
         agent = self.agent_selection
         if not self.action_spaces[agent].contains(action):
-            raise Exception(
-                f"Action for agent {agent} must be in Discrete({self.action_spaces[agent].n}), current action: {action}")
+            raise Exception(f"Action must be Discrete")
 
         self.env._apply_actions({agent: action})
 

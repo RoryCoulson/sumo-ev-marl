@@ -24,10 +24,10 @@ CLOSEST_STATIONS_NUM = 2
 class ChargingStation:
     logging.basicConfig(level=logging.DEBUG)
 
-    def __init__(self, env, cs_id, sumo):
+    def __init__(self, env, cs_id, traci_connection):
         self.id = cs_id
         self.env = env
-        self.sumo = sumo
+        self.traci_connection = traci_connection
 
         # penalties/reward counts
         self.charge_reward = 0
@@ -42,10 +42,10 @@ class ChargingStation:
         self.closest_station_ids_in_range = []
         self.consider_vehicle_remaining_range = MAX_RANGE
         self.closest_stations_to_considered_vehicle = None
-        self.lane_id = self.sumo.chargingstation.getLaneID(self.id)
-        self.lane_length = self.sumo.lane.getLength(self.lane_id)
-        self.edge_id = self.sumo.lane.getEdgeID(self.lane_id)
-        self.cs_end_pos = self.sumo.chargingstation.getEndPos(self.id)
+        self.lane_id = self.traci_connection.chargingstation.getLaneID(self.id)
+        self.lane_length = self.traci_connection.lane.getLength(self.lane_id)
+        self.edge_id = self.traci_connection.lane.getEdgeID(self.lane_id)
+        self.cs_end_pos = self.traci_connection.chargingstation.getEndPos(self.id)
         net = sumolib.net.readNet(self.env._net)
         self.incoming_lanes = net.getLane(self.lane_id).getIncoming()
         self.incoming_lanes_ids = set(
@@ -70,7 +70,7 @@ class ChargingStation:
         for cs_id in self.env.charging_stations.keys():
             if cs_id != self.id:
                 cs2_edge = self.env.cs_edges[cs_id]
-                dist_to_station = self.sumo.simulation.getDistanceRoad(
+                dist_to_station = self.traci_connection.simulation.getDistanceRoad(
                     self.edge_id, 0, cs2_edge, 0)
 
                 if dist_to_station > 0:
@@ -83,7 +83,7 @@ class ChargingStation:
         charging_station_edges = self.env.cs_edges.values()
         # Get driving distance of EVs in close proximity not already rerouted or decided upon
         dists_to_station = {v: self.get_dist_to_station(v) for v in self.get_close_evs() if not set(
-            self.sumo.vehicle.getRoute(v)).intersection(set(charging_station_edges)) and v not in self.decided_vehicles}
+            self.traci_connection.vehicle.getRoute(v)).intersection(set(charging_station_edges)) and v not in self.decided_vehicles}
         logging.debug(
             f"Distances to station of close evs, (station: {self.id}): {dists_to_station}")
 
@@ -122,8 +122,8 @@ class ChargingStation:
             f"Charge reward (station: {self.id}): {self.charge_reward}")
 
         # Check if already rerouted
-        last_curr_edge_id = self.sumo.vehicle.getRoadID(vehicle_id)
-        vehicle_route = self.sumo.vehicle.getRoute(vehicle_id)
+        last_curr_edge_id = self.traci_connection.vehicle.getRoadID(vehicle_id)
+        vehicle_route = self.traci_connection.vehicle.getRoute(vehicle_id)
         charging_station_edges = self.env.cs_edges.values()
 
         # Don't reroute if another agent has rerouted
@@ -133,16 +133,16 @@ class ChargingStation:
 
         # Reroute to charging station
         destination_edge_id = vehicle_route[-1]
-        route_to_station = self.sumo.simulation.findRoute(
+        route_to_station = self.traci_connection.simulation.findRoute(
             last_curr_edge_id, self.edge_id).edges
-        route_to_destination = self.sumo.simulation.findRoute(
+        route_to_destination = self.traci_connection.simulation.findRoute(
             self.edge_id, destination_edge_id).edges
         self.rerouted_vehicles.add(vehicle_id)
         new_route = route_to_station[:-1] + route_to_destination
         logging.debug(f'New route: (vehicle: {vehicle_id}): {new_route}')
 
-        self.sumo.vehicle.setRoute(vehicle_id, new_route)
-        self.sumo.vehicle.setStop(
+        self.traci_connection.vehicle.setRoute(vehicle_id, new_route)
+        self.traci_connection.vehicle.setStop(
             vehicle_id, self.edge_id, pos=self.cs_end_pos,  duration=CHARGING_DURATION)
 
     def compute_reward(self):
@@ -189,14 +189,14 @@ class ChargingStation:
 
     # Remove the rerouted vehicles from the set once it's about to charge
     def remove_rerouted_vehicles(self):
-        vehicles_on_lane = self.sumo.lane.getLastStepVehicleIDs(self.lane_id)
+        vehicles_on_lane = self.traci_connection.lane.getLastStepVehicleIDs(self.lane_id)
         self.rerouted_vehicles = set([
             v for v in self.rerouted_vehicles if v not in vehicles_on_lane])
 
     def get_lane_wait_time(self):
         lanes = self.incoming_lanes_ids.copy()
         lanes.add(self.lane_id)
-        wait_time = sum([self.sumo.lane.getWaitingTime(lane)
+        wait_time = sum([self.traci_connection.lane.getWaitingTime(lane)
                         for lane in lanes])
 
         # Normalize the value to between 0-estimated_max
@@ -212,9 +212,9 @@ class ChargingStation:
         rerouted_av = (len(self.rerouted_vehicles)/len(lanes))
         MIN_GAP = 2.5
         for lane in lanes:
-            lane_length = self.sumo.lane.getLength(lane)
-            lane_density = (self.sumo.lane.getLastStepVehicleNumber(lane) + rerouted_av) / (
-                lane_length / (MIN_GAP + self.sumo.lane.getLastStepLength(lane)))
+            lane_length = self.traci_connection.lane.getLength(lane)
+            lane_density = (self.traci_connection.lane.getLastStepVehicleNumber(lane) + rerouted_av) / (
+                lane_length / (MIN_GAP + self.traci_connection.lane.getLastStepLength(lane)))
             lane_density_sum += lane_density
 
         # Average density of the station lane and any lanes directly to that lane
@@ -228,7 +228,7 @@ class ChargingStation:
     def get_close_busy_vals(self):
         closest_station_ids_in_range = []
         veh_to_station_distances = {}
-        last_curr_edge_id = self.sumo.vehicle.getRoadID(self.consider_vehicle)
+        last_curr_edge_id = self.traci_connection.vehicle.getRoadID(self.consider_vehicle)
 
         logging.debug(
             f"Closest station ids to cs:{self.id} (not specifically in range): {self.closest_station_ids}")
@@ -242,7 +242,7 @@ class ChargingStation:
         # Get only the close stations that are in range and accessible by the considered vehicle
         for cs_id in self.closest_station_ids:
             cs2_edge = self.env.cs_edges[cs_id]
-            veh_to_station_distance = self.sumo.simulation.getDistanceRoad(
+            veh_to_station_distance = self.traci_connection.simulation.getDistanceRoad(
                 last_curr_edge_id, 0, cs2_edge, 0, isDriving=True)
 
             if veh_to_station_distance > 0 and self.consider_vehicle_remaining_range > veh_to_station_distance:
@@ -284,14 +284,14 @@ class ChargingStation:
     # Calculate the estimated remaining range using the previous vehicle stats
     def get_remaining_range(self, vehicle):
         # Get remaining range of considered vehicle
-        energy_consumed = float(self.sumo.vehicle.getParameter(
+        energy_consumed = float(self.traci_connection.vehicle.getParameter(
             vehicle, "device.battery.totalEnergyConsumed"))
-        distance_travelled = self.sumo.vehicle.getDistance(vehicle)
+        distance_travelled = self.traci_connection.vehicle.getDistance(vehicle)
         if distance_travelled == 0 or energy_consumed == 0:
             remaining_range = MAX_RANGE
         else:
             mWh = distance_travelled / energy_consumed  # ???
-            remaining_range = float(self.sumo.vehicle.getParameter(
+            remaining_range = float(self.traci_connection.vehicle.getParameter(
                 vehicle, "device.battery.actualBatteryCapacity")) * mWh
 
         return remaining_range
@@ -340,10 +340,10 @@ class ChargingStation:
 
     # Get subscription distance from vehicle to charging station
     def get_close_evs(self):
-        results = self.sumo.chargingstation.getContextSubscriptionResults(
+        results = self.traci_connection.chargingstation.getContextSubscriptionResults(
             self.id)
         vehicles_ids = results.keys()
-        close_evs = [v for v in vehicles_ids if v in self.sumo.vehicle.getIDList() and self.sumo.vehicle.getParameter(
+        close_evs = [v for v in vehicles_ids if v in self.traci_connection.vehicle.getIDList() and self.traci_connection.vehicle.getParameter(
             v, "has.battery.device") == "true"]
 
         logging.debug(f"Station ({self.id}) subscription results: {results}")
@@ -352,21 +352,21 @@ class ChargingStation:
 
     # Returns the driving distance of a vehicle to this station
     def get_dist_to_station(self, vehicle):
-        vehicle_edge = self.sumo.vehicle.getRoadID(
+        vehicle_edge = self.traci_connection.vehicle.getRoadID(
             vehicle)
 
-        dist_to_station = self.sumo.simulation.getDistanceRoad(
+        dist_to_station = self.traci_connection.simulation.getDistanceRoad(
             vehicle_edge, 0, self.edge_id, self.cs_end_pos, isDriving=True)
 
         return float(dist_to_station)
 
     def get_battery_capacity(self, vehicle):
-        battery = float(self.sumo.vehicle.getParameter(
+        battery = float(self.traci_connection.vehicle.getParameter(
             vehicle, 'device.battery.actualBatteryCapacity'))
         return battery
 
     def get_battery(self, vehicle):
         battery = self.get_battery_capacity(vehicle)
-        max_battery = float(self.sumo.vehicle.getParameter(
+        max_battery = float(self.traci_connection.vehicle.getParameter(
             vehicle, 'device.battery.maximumBatteryCapacity'))
         return (battery/max_battery)
