@@ -17,16 +17,14 @@ if __name__ == "__main__":
     experiment_time = str(datetime.now()).split(".")[0]
     out_csv = f"../../outputs/2_station_strip/greedy/greedy"
 
-    RESOLUTION = (3200, 1800)
-
     env = SumoEVEnvironment(
         net_file=net_dir_path + "nets/2_station_strip/2_station_strip.net.xml",
         sim_file=net_dir_path + "nets/2_station_strip/2_station_strip.sumocfg",
         output_file=out_csv,
-        use_gui=True,
+        use_gui=False,
         num_seconds=5000,
-        render_mode="human",
-        virtual_display=RESOLUTION
+
+
     )
 
     for run in range(1, 51):

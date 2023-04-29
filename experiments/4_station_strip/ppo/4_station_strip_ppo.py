@@ -21,7 +21,7 @@ from ray.tune.registry import register_env
 
 if __name__ == "__main__":
     ray.init()
-    RESOLUTION = (3200, 1800)
+
     net_dir_path = "../../../"
     register_env(
         "4_station_strip",
@@ -30,10 +30,10 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
                 sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
                 output_file="../../outputs/4_station_strip/ppo/ppo",
-                use_gui=True,
+                use_gui=False,
                 num_seconds=5000,
-                render_mode="human",
-                virtual_display=RESOLUTION
+
+
             )
         ),
     )

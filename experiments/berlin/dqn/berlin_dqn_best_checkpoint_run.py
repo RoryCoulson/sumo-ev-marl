@@ -19,7 +19,7 @@ BEST_CHECKPOINT_PATH = "../../results/dqn/DQN_berlin_bb17b_00000_0_2023-04-18_11
 
 if __name__ == "__main__":
     ray.init()
-    RESOLUTION = (3200, 1800)
+
     net_dir_path = "../../../"
     register_env(
         "berlin",
@@ -28,26 +28,25 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/berlin/berlin.net.xml",
                 sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
                 output_file="../../outputs/berlin/dqn/best/best_run",
-                use_gui=True,
+                use_gui=False,
                 num_seconds=5000,
-                render_mode="human",
-                virtual_display=RESOLUTION
+
+
             )
         ),
     )
 
     experiment_time = str(datetime.now()).split(".")[0]
     out_csv = f"../../outputs/berlin/dqn/dqn_best_checkpoint/{experiment_time}"
-    RESOLUTION = (3200, 1800)
 
     env = SumoEVEnvironment(
         net_file=net_dir_path + "nets/berlin/berlin.net.xml",
         sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
         output_file=out_csv,
-        use_gui=True,
+        use_gui=False,
         num_seconds=5000,
-        render_mode="human",
-        virtual_display=RESOLUTION
+
+
     )
 
     algo = Algorithm.from_checkpoint(BEST_CHECKPOINT_PATH)

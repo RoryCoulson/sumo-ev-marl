@@ -19,7 +19,7 @@ from ray.tune.registry import register_env
 
 if __name__ == "__main__":
     ray.init()
-    RESOLUTION = (3200, 1800)
+
     net_dir_path = "../../../"
     register_env(
         "berlin",
@@ -28,10 +28,10 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/berlin/berlin.net.xml",
                 sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
                 output_file="../../outputs/berlin/dqn/dqn",
-                use_gui=True,
+                use_gui=False,
                 num_seconds=5000,
-                render_mode="human",
-                virtual_display=RESOLUTION
+
+
             )
         ),
     )
