@@ -51,8 +51,8 @@ class SumoEVEnvironment(gym.Env):
         net_file: str,
         sim_file: str,
         begin_time: int = 0,
-        num_seconds: int = 10000,
-        use_gui: bool = False,
+        seconds: int = 10000,
+        enable_gui: bool = False,
         sumo_seed: Union[str, int] = "random",
         sumo_warnings: bool = True,
         add_per_agent_info: bool = True,
@@ -69,18 +69,18 @@ class SumoEVEnvironment(gym.Env):
 
         self._net = net_file
         self._sim = sim_file
-        self.use_gui = use_gui
+        self.enable_gui = enable_gui
         self.render_mode = render_mode
         self.virtual_display = virtual_display
         self.display = None
 
-        if self.use_gui or self.render_mode is not None:
+        if self.enable_gui or self.render_mode is not None:
             self._sumo_binary = sumolib.checkBinary("sumo-gui")
         else:
             self._sumo_binary = sumolib.checkBinary("sumo")
 
         self.begin_time = begin_time
-        self.sim_max_time = num_seconds
+        self.sim_max_time = seconds
         self.delta_time = delta_time
         self.max_depart_delay = max_depart_delay
         self.waiting_time_memory = waiting_time_memory
@@ -167,7 +167,7 @@ class SumoEVEnvironment(gym.Env):
             sumo_cmd.append("--no-warnings")
         if self.additional_sumo_cmd is not None:
             sumo_cmd.extend(self.additional_sumo_cmd.split())
-        if self.use_gui or self.render_mode is not None:
+        if self.enable_gui or self.render_mode is not None:
             sumo_cmd.extend(["--start", "--quit-on-end"])
         if LIBSUMO:
             traci.start(sumo_cmd)
@@ -175,7 +175,7 @@ class SumoEVEnvironment(gym.Env):
         else:
             traci.start(sumo_cmd, label=self.label)
             self.conn = traci.getConnection(self.label)
-        if self.use_gui or self.render_mode is not None:
+        if self.enable_gui or self.render_mode is not None:
             self.conn.gui.setSchema(traci.gui.DEFAULT_VIEW, "real world")
 
     def reset(self, seed: Optional[int] = None, **kwargs):

@@ -29,8 +29,8 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/2_station_strip/2_station_strip.net.xml",
                 sim_file=net_dir_path + "nets/2_station_strip/2_station_strip.sumocfg",
                 output_file="../../outputs/2_station_strip/ppo/best/best_run",
-                use_gui=True,
-                num_seconds=5000,
+                enable_gui=True,
+                seconds=5000,
 
 
             )
@@ -44,8 +44,8 @@ if __name__ == "__main__":
         net_file=net_dir_path + "nets/2_station_strip/2_station_strip.net.xml",
         sim_file=net_dir_path + "nets/2_station_strip/2_station_strip.sumocfg",
         output_file=out_csv,
-        use_gui=True,
-        num_seconds=5000,
+        enable_gui=True,
+        seconds=5000,
 
 
     )

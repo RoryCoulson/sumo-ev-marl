@@ -29,8 +29,8 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
                 sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
                 output_file="../../outputs/4x4_grid/ppo/ppo",
-                use_gui=False,
-                num_seconds=5000,
+                enable_gui=False,
+                seconds=5000,
 
 
             )

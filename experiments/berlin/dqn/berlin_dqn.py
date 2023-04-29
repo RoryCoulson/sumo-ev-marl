@@ -28,8 +28,8 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/berlin/berlin.net.xml",
                 sim_file=net_dir_path + "nets/berlin/berlin.sumocfg",
                 output_file="../../outputs/berlin/dqn/dqn",
-                use_gui=False,
-                num_seconds=1000,
+                enable_gui=False,
+                seconds=1000,
             )
         ),
     )

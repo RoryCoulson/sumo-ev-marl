@@ -31,8 +31,8 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
                 sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
                 output_file="../../outputs/4_station_strip/dqn/best/best_run",
-                use_gui=True,
-                num_seconds=5000,
+                enable_gui=True,
+                seconds=5000,
             )
         ),
     )
@@ -44,8 +44,8 @@ if __name__ == "__main__":
         net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
         sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
         output_file=out_csv,
-        use_gui=True,
-        num_seconds=5000,
+        enable_gui=True,
+        seconds=5000,
     )
 
     algo = Algorithm.from_checkpoint(BEST_CHECKPOINT_PATH)
