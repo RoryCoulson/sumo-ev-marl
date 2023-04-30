@@ -1,7 +1,0 @@
-<additionals>
-    <!-- start and end pos gives the length of it, (could have multiple stations on a lane... or could have multiple lanes, multiple choices there) -->
-    <additional>
-        <chargingStation chargeDelay="2" chargeInTransit="0" power="200000" efficiency="0.95" endPos="5" id="1" lane="3_to_5_0" startPos="0"/>
-        <chargingStation chargeDelay="2" chargeInTransit="0" power="200000" efficiency="0.95" endPos="5" id="2" lane="6_to_7_0" startPos="0"/>
-    </additional>
-</additionals>
