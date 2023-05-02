@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # Run with: python plot2.py -f data/
 
-num_stations = 10  # adjust depending on network
+num_stations = 2  # adjust depending on network
 prs = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 prs.add_argument("-f", nargs="+", required=True, help="Files\n")
