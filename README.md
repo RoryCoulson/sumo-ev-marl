@@ -4,10 +4,12 @@ Electric vehicle charging point demand handling using multi-agent reinforcement 
 
 
 ## Setup
-Run `pip install .` in the root to build the package allowing the experiments to access the sumo_ev_rl_competitive module.
-Set `enable_gui` to True when running an experiment to visualize the training.
+* Python 3.9.12
+* Install SUMO (https://sumo.dlr.de/docs/Installing/index.html)
+* pip install -r $SUMO_HOME/tools/requirements.txt
+* `pip install .` in the root to build the package.
+* see requirements.txt for additional libraries
 
-A correct installation of SUMO is required to run these simulations.
 
 Acknowledgements:
 
