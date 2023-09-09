@@ -3,7 +3,7 @@
 Electric vehicle charging point demand handling using multi-agent reinforcement learning. The project aims to improve the problem of queueing at EV charging points by providing smarter distribution. The work includes a cooperative custom environment and the agents are deployed using PPO, DQN and greedy algorithms within a SUMO simulator. Although the simulation won't fully match reality, the findings provide an insight into the potential capability of such a system.
 
 
-
+## Setup
 Run `pip install .` in the root to build the package allowing the experiments to access the sumo_ev_rl_competitive module.
 Set `enable_gui` to True when running an experiment to visualize the training.
 
