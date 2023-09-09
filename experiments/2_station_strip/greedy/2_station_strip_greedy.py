@@ -11,36 +11,35 @@ if "SUMO_HOME" in os.environ:
 else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 
-if __name__ == "__main__":
 
-    net_dir_path = "../../../"
-    experiment_time = str(datetime.now()).split(".")[0]
-    out_csv = f"../../outputs/2_station_strip/greedy/greedy"
+net_dir_path = "../../../"
+experiment_time = str(datetime.now()).split(".")[0]
+out_csv = f"../../outputs/2_station_strip/greedy/greedy"
 
-    env = SumoEVEnvironment(
-        net_file=net_dir_path + "nets/2_station_strip/2_station_strip.net.xml",
-        sim_file=net_dir_path + "nets/2_station_strip/2_station_strip.sumocfg",
-        output_file=out_csv,
-        enable_gui=True,
-        seconds=5000,
-    )
+env = SumoEVEnvironment(
+    net_file=net_dir_path + "nets/2_station_strip/2_station_strip.net.xml",
+    sim_file=net_dir_path + "nets/2_station_strip/2_station_strip.sumocfg",
+    output_file=out_csv,
+    enable_gui=True,
+    seconds=5000,
+)
 
-    for run in range(1, 51):
-        initial_states = env.reset()
+for run in range(1, 51):
+    initial_states = env.reset()
 
-        done = {"__all__": False}
-        infos = []
+    done = {"__all__": False}
+    infos = []
 
-        while not done["__all__"]:
-            actions = {}
-            for id, cs in env.charging_stations.items():
-                if not cs.consider_vehicle:
-                    actions[id] = 0
-                else:
-                    closest_battery = cs.get_battery(
-                        cs.consider_vehicle)
-                    actions[id] = int(closest_battery <= 0.2)
-            s, r, done, _ = env.step(actions=actions)
+    while not done["__all__"]:
+        actions = {}
+        for id, cs in env.charging_stations.items():
+            if not cs.consider_vehicle:
+                actions[id] = 0
+            else:
+                closest_battery = cs.get_battery(
+                    cs.consider_vehicle)
+                actions[id] = int(closest_battery <= 0.2)
+        s, r, done, _ = env.step(actions=actions)
 
-        env.save_csv(out_csv, run)
-        env.close()
+    env.save_csv(out_csv, run)
+    env.close()

@@ -20,46 +20,45 @@ from sumo_ev_rl.environment.env import env
 # Update to your best checkpoint, an example path may look like:
 BEST_CHECKPOINT_PATH = "../../results/dqn/DQN_4_station_strip_db29d_00000_0_2023-04-29_02-55-07/checkpoint_000500"
 
-if __name__ == "__main__":
-    ray.init()
+ray.init()
 
-    net_dir_path = "../../../"
-    register_env(
-        "4_station_strip",
-        lambda _: PettingZooEnv(
-            env(
-                net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
-                sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
-                output_file="../../outputs/4_station_strip/dqn/best/best_run",
-                enable_gui=True,
-                seconds=5000,
-            )
-        ),
-    )
+net_dir_path = "../../../"
+register_env(
+    "4_station_strip",
+    lambda _: PettingZooEnv(
+        env(
+            net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
+            sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
+            output_file="../../outputs/4_station_strip/dqn/best/best_run",
+            enable_gui=True,
+            seconds=5000,
+        )
+    ),
+)
 
-    experiment_time = str(datetime.now()).split(".")[0]
-    out_csv = f"../../outputs/4_station_strip/dqn/dqn_best_checkpoint/{experiment_time}"
+experiment_time = str(datetime.now()).split(".")[0]
+out_csv = f"../../outputs/4_station_strip/dqn/dqn_best_checkpoint/{experiment_time}"
 
-    env = SumoEVEnvironment(
-        net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
-        sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
-        output_file=out_csv,
-        enable_gui=True,
-        seconds=5000,
-    )
+env = SumoEVEnvironment(
+    net_file=net_dir_path + "nets/4_station_strip/4_station_strip.net.xml",
+    sim_file=net_dir_path + "nets/4_station_strip/4_station_strip.sumocfg",
+    output_file=out_csv,
+    enable_gui=True,
+    seconds=5000,
+)
 
-    algo = Algorithm.from_checkpoint(BEST_CHECKPOINT_PATH)
+algo = Algorithm.from_checkpoint(BEST_CHECKPOINT_PATH)
 
-    for run in range(1, 2):
-        initial_states = env.reset()
-        done = {"__all__": False}
-        infos = []
-        obs = env.reset()
+for run in range(1, 2):
+    initial_states = env.reset()
+    done = {"__all__": False}
+    infos = []
+    obs = env.reset()
 
-        while not done["__all__"]:
-            actions = {cs: algo.compute_single_action(obs[cs], policy_id='0')
-                       for cs in env.cs_ids}
-            obs, r, done, _ = env.step(actions=actions)
+    while not done["__all__"]:
+        actions = {cs: algo.compute_single_action(obs[cs], policy_id='0')
+                    for cs in env.cs_ids}
+        obs, r, done, _ = env.step(actions=actions)
 
-        env.save_csv(out_csv, run)
-        env.close()
+    env.save_csv(out_csv, run)
+    env.close()

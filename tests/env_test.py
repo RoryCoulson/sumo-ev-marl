@@ -14,5 +14,4 @@ def test_api():
     env.close()
 
 
-if __name__ == "__main__":
-    test_api()
+test_api()
