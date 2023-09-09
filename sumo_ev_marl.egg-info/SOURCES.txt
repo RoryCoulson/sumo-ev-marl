@@ -1,3 +1,4 @@
+LICENSE
 README.md
 setup.py
 sumo_ev_marl.egg-info/PKG-INFO
