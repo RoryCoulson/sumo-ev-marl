@@ -15,7 +15,7 @@ from ray.rllib.env import PettingZooEnv
 from ray.tune.registry import register_env
 from sumo_ev_rl.environment.env import env
 
-# Update with new run
+# Update to your best checkpoint, an example path may look like:
 BEST_CHECKPOINT_PATH = "../../results/4_station_strip/ppo/ppo/PPO_4_station_strip_e47bc_00000_0_2023-04-29_02-55-18/checkpoint_000125"
 
 if __name__ == "__main__":
