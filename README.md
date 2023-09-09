@@ -1,11 +1,13 @@
 # sumo-ev-marl
 
-This repository includes a cooperative custom environment using both Gym and PettingZoo libraries. RLlib is also used in developing the PPO, DQN, QL algorithms for running in the SUMO simulator. This extends upon the work from the sumo-ev-marl-competitive repository with an improved environment configuration and more simulation networks.
+Electric vehicle charging point demand handling using multi-agent reinforcement learning. The project aims to improve the problem of queueing at EV charging points by providing smarter distribution. The work includes a cooperative custom environment and the agents are deployed using PPO, DQN and greedy algorithms within a SUMO simulator. Although the simulation won't fully match reality, the findings provide an insight into the potential capability of such a system.
+
+
 
 Run `pip install .` in the root to build the package allowing the experiments to access the sumo_ev_rl_competitive module.
 Set `enable_gui` to True when running an experiment to visualize the training.
 
-A correct installation of SUMO is required to run these simulations. Run: export LIBSUMO_AS_TRACI=1 for performance increase with SUMO.
+A correct installation of SUMO is required to run these simulations.
 
 Acknowledgements:
 
