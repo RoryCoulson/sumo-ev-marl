@@ -21,6 +21,7 @@ if "SUMO_HOME" in os.environ:
     sys.path.append(tools)
 else:
     raise ImportError("Please declare the environment variable 'SUMO_HOME'")
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 LIBSUMO = "LIBSUMO_AS_TRACI" in os.environ
 
@@ -284,8 +285,8 @@ class SumoEVEnvironment(gym.Env):
             battery = (battery/max_battery)
 
             # e.g. 20% -> 0, 100% -> -70ish
-            self.charging_stations[cs].not_charged_reward += - self.charging_stations[cs].get_combined_charge_reward(
-                battery)
+            self.charging_stations[cs].not_charged_reward += - \
+                self.charging_stations[cs].get_combined_charge_reward(battery)
 
             logging.debug(
                 f"Not charged reward: {self.charging_stations[cs].not_charged_reward}")
@@ -424,8 +425,9 @@ class SumoEVEnvironment(gym.Env):
             Path(Path(output_file).parent).mkdir(parents=True, exist_ok=True)
             pd.DataFrame(self.metrics).to_csv(output_file +
                                               f"_episode{episode}" + ".csv", index=False)
-            pd.DataFrame(self.total_metrics).to_csv(output_file +
-                                                    f"_total_metrics_{self.label}" + ".csv", index=False)
+            pd.DataFrame(
+                self.total_metrics).to_csv(
+                output_file + f"_total_metrics_{self.label}" + ".csv", index=False)
 
 
 # PettingZooo AECEnv interface iplementation wrapper for SUMO

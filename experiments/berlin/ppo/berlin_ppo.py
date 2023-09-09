@@ -18,6 +18,7 @@ from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.env import PettingZooEnv
 from ray.tune.registry import register_env
 
+
 if __name__ == "__main__":
     ray.init()
 

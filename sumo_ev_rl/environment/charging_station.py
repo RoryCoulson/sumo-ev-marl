@@ -11,6 +11,8 @@ if "SUMO_HOME" in os.environ:
     sys.path.append(tools)
 else:
     raise ImportError("'SUMO_HOME' environment variable")
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+
 
 MAX_CLOSEST_DISTANCE = 300
 MAX_RANGE = 150000

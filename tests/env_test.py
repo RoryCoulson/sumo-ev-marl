@@ -1,6 +1,7 @@
 from pettingzoo.test import api_test
 import sumo_ev_rl
 
+
 def test_api():
     env = sumo_ev_rl.env(
         net_file="../nets/2_station_strip/2_station_strip.net.xml",

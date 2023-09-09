@@ -31,7 +31,7 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/2_station_strip/2_station_strip.net.xml",
                 sim_file=net_dir_path + "nets/2_station_strip/2_station_strip.sumocfg",
                 output_file="../../outputs/2_station_strip/ppo/ppo",
-                enable_gui=False,
+                enable_gui=True,
                 seconds=5000,
             )
         ),

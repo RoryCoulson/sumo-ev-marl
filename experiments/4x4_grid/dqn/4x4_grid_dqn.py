@@ -30,7 +30,7 @@ if __name__ == "__main__":
                 net_file=net_dir_path + "nets/4x4_grid/4x4_grid.net.xml",
                 sim_file=net_dir_path + "nets/4x4_grid/4x4_grid.sumocfg",
                 output_file="../../outputs/4x4_grid/dqn/dqn",
-                enable_gui=False,
+                enable_gui=True,
                 seconds=5000,
 
 
