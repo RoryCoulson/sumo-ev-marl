@@ -7,7 +7,7 @@ Electric vehicle charging station demand handling using multi-agent reinforcemen
 * Python 3.9
 * Install SUMO (https://sumo.dlr.de/docs/Installing/index.html)
 * `pip install -r $SUMO_HOME/tools/requirements.txt`
-* `pip install .` in the root to build the package.
+* `pip install .` in the root to build the package
 * See requirements.txt for additional libraries
 
 
