@@ -26,7 +26,7 @@ Created a final example network using OpenStreetMap which is a part of Berlin's 
 <img width="360" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/b88c7e95-f6f0-483d-a433-079d0c5a6e27"><br/><br/>
 
 ## Berlin results:
-A 87.2% and 88.1% reduction in mean wait times for the multi-agent PPO and DQN implementations were achieved against a greedy approach where each EV goes to the nearest station at a certain battery level.
+An 87.2% and 88.1% reduction in mean wait times for the multi-agent PPO and DQN implementations respectively were achieved against a greedy approach where each EV goes to the nearest station at a certain battery level.
 
 <img width="1000" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/0d54f9c4-e186-4aff-9fe3-e98da70fe1c8">
 
