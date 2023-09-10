@@ -32,7 +32,7 @@ A 87.2% and 88.1% reduction in mean wait times for the multi-agent PPO and DQN i
 
 <img width="264" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/39618d3f-ae66-4961-9357-5d5562cfb0a6">
 <img width="288" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/50824258-80c8-46fe-bfee-28e174d79425">
-<img width="265" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/5f060f07-09f5-456a-808c-a1efb0b5438c">
+<img width="268" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/5f060f07-09f5-456a-808c-a1efb0b5438c">
 
 
 ## References:
