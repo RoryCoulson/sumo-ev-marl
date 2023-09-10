@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2023-03-24 14:29:02 by Eclipse SUMO sumo Version 1.16.0
+-->
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="2_station_strip.net.xml"/>
+        <route-files value="2_station_strip.rou.xml"/>
+        <!-- <additional-files value="circles.add.xml"/> -->
+        <!-- , charging_stations.add.xml <- need to add in the network file for some reason additional files not picking the charging station up -->
+    </input>
+    <!-- <output>
+        <battery-output value="battery.xml"/>
+        <chargingstations-output value="chargingstations.xml"/>
+    </output> -->
+    <report>
+        <verbose value="true"/>
+        <duration-log.statistics value="true"/>
+    </report>
+
+</configuration>
