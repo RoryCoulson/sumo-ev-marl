@@ -227,7 +227,6 @@ class SumoEVEnvironment(gym.Env):
                 vehicle, 'device.battery.actualBatteryCapacity'))
             # Set random battery to vehicle when entering the simulation
             if battery == -1:
-                # ? change '1' to something like within range of the closest charging station?
                 battery = random.randint(1, max_battery)
                 self.conn.vehicle.setParameter(
                     vehicle, 'device.battery.actualBatteryCapacity', str(battery))
@@ -348,7 +347,7 @@ class SumoEVEnvironment(gym.Env):
             vehicle) for vehicle in vehicles]
 
         self.cumulative_total_wait_time += sum(waiting_times)
-        self.cumulative_mean_wait_time += np.mean(waiting_times)  # ???
+        self.cumulative_mean_wait_time += np.mean(waiting_times)
 
         return {
             "system_total_waiting_time": sum(waiting_times),

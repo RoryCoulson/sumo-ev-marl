@@ -84,8 +84,12 @@ class ChargingStation:
     def compute_observation(self):
         charging_station_edges = self.env.cs_edges.values()
         # Get driving distance of EVs in close proximity not already rerouted or decided upon
-        dists_to_station = {v: self.get_dist_to_station(v) for v in self.get_close_evs() if not set(
-            self.traci_connection.vehicle.getRoute(v)).intersection(set(charging_station_edges)) and v not in self.decided_vehicles}
+        dists_to_station = {
+            v: self.get_dist_to_station(v) for v in self.get_close_evs()
+            if
+            not
+            set(self.traci_connection.vehicle.getRoute(v)).intersection(
+                set(charging_station_edges)) and v not in self.decided_vehicles}
         logging.debug(
             f"Distances to station of close evs, (station: {self.id}): {dists_to_station}")
 
@@ -263,7 +267,8 @@ class ChargingStation:
         busy_vals = []
         if self.closest_station_ids_in_range:
             busy_vals = [
-                self.env.charging_stations[cs_id].busy_val for cs_id in self.closest_station_ids_in_range]
+                self.env.charging_stations[cs_id].busy_val
+                for cs_id in self.closest_station_ids_in_range]
         else:
             busy_vals = list(np.ones(CLOSEST_STATIONS_NUM))
         # Fill remaining values if not filled by stations
@@ -292,7 +297,7 @@ class ChargingStation:
         if distance_travelled == 0 or energy_consumed == 0:
             remaining_range = MAX_RANGE
         else:
-            mWh = distance_travelled / energy_consumed  # ???
+            mWh = distance_travelled / energy_consumed
             remaining_range = float(self.traci_connection.vehicle.getParameter(
                 vehicle, "device.battery.actualBatteryCapacity")) * mWh
 
@@ -345,8 +350,8 @@ class ChargingStation:
         results = self.traci_connection.chargingstation.getContextSubscriptionResults(
             self.id)
         vehicles_ids = results.keys()
-        close_evs = [v for v in vehicles_ids if v in self.traci_connection.vehicle.getIDList() and self.traci_connection.vehicle.getParameter(
-            v, "has.battery.device") == "true"]
+        close_evs = [v for v in vehicles_ids if v in self.traci_connection.vehicle.getIDList(
+        ) and self.traci_connection.vehicle.getParameter(v, "has.battery.device") == "true"]
 
         logging.debug(f"Station ({self.id}) subscription results: {results}")
         logging.debug(f"Close EVs: {close_evs}")
