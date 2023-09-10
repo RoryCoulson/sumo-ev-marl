@@ -1,6 +1,6 @@
 # sumo-ev-marl
 
-Electric vehicle charging station demand handling using multi-agent reinforcement learning. The project aims to improve the queueing problem at EV charging stations by providing smarter distribution. The work includes a cooperative custom environment and agents that are deployed using PPO, DQN and greedy algorithms within a SUMO simulator. The agents' aim is to learn which EVs are best to charge and which agent is best situated to charge them. Although the simulation won't fully match reality, the findings provide an insight into the potential capability of such a system.
+Electric vehicle charging station demand handling using multi-agent reinforcement learning. The project aims to improve the queueing problem at EV charging stations by providing smarter distribution. The work includes a cooperative custom environment and agents that are deployed using PPO, DQN and greedy algorithms within a SUMO simulator. The agents' aim is to learn which EVs are best to charge and which agent is best suited to charge them. Although the simulation won't fully match reality, the findings provide an insight into the potential capability of such a system.
 
 
 ## Setup
