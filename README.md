@@ -22,7 +22,7 @@ Built three test networks to experiment with different scenarios:
 Created a final example network using OpenStreetMap which is a part of Berlin's road network:
 
 <img width="260" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/c4e108a3-392f-4e6c-b5df-40ad43d21b80">
-<img width="175"  src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/dbfb190d-b5e9-47d9-806b-b63e75bd7dea">
+<img width="185"  src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/dbfb190d-b5e9-47d9-806b-b63e75bd7dea">
 <img width="360" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/b88c7e95-f6f0-483d-a433-079d0c5a6e27"><br/><br/>
 
 ## Berlin results:
