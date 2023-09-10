@@ -4,16 +4,12 @@ Electric vehicle charging point demand handling using multi-agent reinforcement 
 
 
 ## Setup
-* Python 3.9.12
+* Python 3.9
 * Install SUMO (https://sumo.dlr.de/docs/Installing/index.html)
-* pip install -r $SUMO_HOME/tools/requirements.txt
+* `pip install -r $SUMO_HOME/tools/requirements.txt`
 * `pip install .` in the root to build the package.
-* see requirements.txt for additional libraries
+* See requirements.txt for additional libraries
 
-
-Acknowledgements:
-
-The file: sumo_ev_rl_competitive/environment/env.py in this project is heavily reliant on Gym (https://www.gymlibrary.dev/content/environment_creation/) and PettingZoo (https://pettingzoo.farama.org/content/environment_creation/) documentation and an implementation with traffic lights, sumo-rl (https://github.com/LucasAlegre/sumo-rl) for setting up a custom multi-agent environment with the correct structure and boilerplate needed.
 
 
 
@@ -32,3 +28,12 @@ The file: sumo_ev_rl_competitive/environment/env.py in this project is heavily r
 <img width="322" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/39618d3f-ae66-4961-9357-5d5562cfb0a6">
 <img width="350" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/50824258-80c8-46fe-bfee-28e174d79425">
 <img width="330" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/5f060f07-09f5-456a-808c-a1efb0b5438c">
+
+
+## References:
+* Gymnasium: https://gymnasium.farama.org/
+* PettingZoo: https://pettingzoo.farama.org/index.html
+* Ray RLlib: https://docs.ray.io/en/latest/rllib/index.html
+* Sumo-rl: https://github.com/LucasAlegre/sumo-rl
+
+
