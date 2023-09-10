@@ -15,9 +15,9 @@ Electric vehicle charging station demand handling using multi-agent reinforcemen
 
 Built three test networks to experiment with different scenarios:
 
-<img width="397" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/9ffccb4e-0f33-436b-ab18-e696522508cd">
-<img width="306" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/38261253-aa8c-4018-8910-8455f3511446">
-<img width="249" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/f8de548d-748b-4d9f-839d-ce4306cffe74"><br/><br/>
+<img width="390" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/9ffccb4e-0f33-436b-ab18-e696522508cd">
+<img width="300" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/38261253-aa8c-4018-8910-8455f3511446">
+<img width="250" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/f8de548d-748b-4d9f-839d-ce4306cffe74"><br/><br/>
 
 Created a final example network using OpenStreetMap which is a part of Berlin's road network:
 
