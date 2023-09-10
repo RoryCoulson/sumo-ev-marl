@@ -21,17 +21,17 @@ Built three test networks to experiment with different scenarios:
 
 Created a final example network using OpenStreetMap which is a part of Berlin's road network:
 
-<img width="32.3%" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/c4e108a3-392f-4e6c-b5df-40ad43d21b80">
-<img width="21.8%"  src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/dbfb190d-b5e9-47d9-806b-b63e75bd7dea">
-<img width="45.8%" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/b88c7e95-f6f0-483d-a433-079d0c5a6e27"><br/><br/>
+<img width="263" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/c4e108a3-392f-4e6c-b5df-40ad43d21b80">
+<img width="165"  src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/dbfb190d-b5e9-47d9-806b-b63e75bd7dea">
+<img width="380" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/b88c7e95-f6f0-483d-a433-079d0c5a6e27"><br/><br/>
 
 ## Berlin results:
 A 87.2% and 88.1% reduction in mean wait times for the multi-agent PPO and DQN implementations were achieved against a greedy approach where each EV goes to the nearest station at a certain battery level.
 
 <img width="1000" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/0d54f9c4-e186-4aff-9fe3-e98da70fe1c8">
-<img width="302" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/39618d3f-ae66-4961-9357-5d5562cfb0a6">
-<img width="330" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/50824258-80c8-46fe-bfee-28e174d79425">
-<img width="300" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/5f060f07-09f5-456a-808c-a1efb0b5438c">
+<img width="262" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/39618d3f-ae66-4961-9357-5d5562cfb0a6">
+<img width="280" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/50824258-80c8-46fe-bfee-28e174d79425">
+<img width="250" src="https://github.com/RoryCoulson/sumo-ev-marl/assets/52762734/5f060f07-09f5-456a-808c-a1efb0b5438c">
 
 
 ## References:
